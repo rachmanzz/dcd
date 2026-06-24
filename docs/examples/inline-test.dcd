@@ -5,6 +5,7 @@ m=20
 
 [section 0]
 name=test
+keys=
 
 --- BODY ---
 <h1>Inline Formatting Test</h1>
