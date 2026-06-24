@@ -29,11 +29,10 @@ keys=title, author
 <p>{{info.author}}</p>
 
 [section:next-page 1]
-orientation=landscape
 start-page=1
 
 --- BODY ---
-<p>new section, landscape, page number reset to 1</p>
+<p>new section, page number reset to 1</p>
 ```
 
 | Syntax                           | Description                           |
@@ -47,6 +46,5 @@ start-page=1
 | Property      | Description                         |
 |---------------|-------------------------------------|
 | `layout`      | Page size: `A4`, `Letter`, `Legal`, `A3`, `A5`, `B5`, `custom` |
-| `orientation` | `portrait` / `landscape`            |
 | `start-page`  | Starting page number (default 1) — recognized, not yet implemented |
 | `title`       | Section title (for navigation)      |

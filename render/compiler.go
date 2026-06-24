@@ -130,7 +130,7 @@ func (c *Compiler) renderSection(sec parse.Section) error {
 		}
 	}
 
-	if sec.Props["layout"] != "" || sec.Props["orientation"] != "" {
+	if sec.Props["layout"] != "" {
 		if err := c.r.SetPageStyle(sec.Props); err != nil {
 			return err
 		}
