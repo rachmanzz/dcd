@@ -66,9 +66,13 @@ dcd --data report.json report.dcd report.docx
 |----------------------------------|-----------------------------|
 | `<h1>`–`<h6>`                    | Heading                     |
 | `<p>...</p>`                     | Paragraph                   |
-| `<w:c>...</w>`                   | Center block                |
-| `<w:b>...</w>`                   | Bold block                  |
-| `<w:c|b>...</w>`                 | Center + Bold               |
+| `<w:c>...</w:c>`                 | Center block                |
+| `<w:b>...</w:b>`                 | Bold block                  |
+| `<w:i>...</w:i>`                 | Italic block                |
+| `<w:u>...</w:u>`                 | Underline block             |
+| `<w:c|b>...</w:c|b>`             | Center + Bold               |
+| `<w:b|i>...</w:b|i>`             | Bold + Italic               |
+| `<w:b|i|u>...</w:b|i|u>`         | Bold + Italic + Underline   |
 | `<pb>` / `<page-break>`          | Page break                  |
 | `<br>`                           | Line break                  |
 | `<hr>`                           | Horizontal rule             |
