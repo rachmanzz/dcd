@@ -696,6 +696,24 @@ func (d *DocxRenderer) AddWrappedParagraph(text string, flags string) error {
 					run.Property.Bold = ctypes.OnOffFromBool(true)
 				}
 			}
+		case "i":
+			if len(p.GetCT().Children) > 0 {
+				if run := p.GetCT().Children[0].Run; run != nil {
+					if run.Property == nil {
+						run.Property = &ctypes.RunProperty{}
+					}
+					run.Property.Italic = ctypes.OnOffFromBool(true)
+				}
+			}
+		case "u":
+			if len(p.GetCT().Children) > 0 {
+				if run := p.GetCT().Children[0].Run; run != nil {
+					if run.Property == nil {
+						run.Property = &ctypes.RunProperty{}
+					}
+					run.Property.Underline = ctypes.NewGenSingleStrVal(stypes.UnderlineSingle)
+				}
+			}
 		}
 	}
 	return nil
