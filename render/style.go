@@ -6,6 +6,22 @@ import (
 	"time"
 )
 
+var specConv = map[string]string{
+	"dd":   "02",
+	"MM":   "01",
+	"yyyy": "2006",
+	"HH":   "15",
+	"mm":   "04",
+	"ss":   "05",
+}
+
+// specRe matches any custom format specifier at word boundaries.
+var specRe = func() *regexp.Regexp {
+	keys := []string{"dd", "MM", "yyyy", "HH", "mm", "ss"}
+	pat := `\b(?:` + strings.Join(keys, `|`) + `)\b`
+	return regexp.MustCompile(pat)
+}()
+
 // normalizePropertyKey maps user-facing property names to internal keys
 func normalizePropertyKey(key string) string {
 	switch key {
@@ -167,11 +183,32 @@ func parseFormats(s string) map[string]string {
 	return m
 }
 
-// applyFormat applies a Go time format string to a value.
-// If the value is already a time.Time, formats it directly.
-// If it's a string, attempts to parse common layouts, then formats.
+// convertFormat translates custom specifiers to Go time format.
+//
+//	dd → 02   (day)
+//	MM → 01   (month)
+//	yyyy → 2006 (year)
+//	HH → 15   (hour)
+//	mm → 04   (minute)
+//	ss → 05   (second)
+//
+// Escaped \: is unescaped → literal : (to avoid breaking the [key:format] parser).
+// Non-matching text is passed through as-is (supports regex patterns like \d, \w).
+func convertFormat(fmtStr string) string {
+	result := specRe.ReplaceAllStringFunc(fmtStr, func(match string) string {
+		if goFmt, ok := specConv[match]; ok {
+			return goFmt
+		}
+		return match
+	})
+	result = strings.ReplaceAll(result, "\\:", ":")
+	return result
+}
+
+// applyFormat applies a time format string to a value.
+// Custom specifiers (dd, MM, yyyy, etc.) are converted to Go format automatically.
 func applyFormat(val string, fmtStr string) string {
-	// Try known layouts
+	fmtStr = convertFormat(fmtStr)
 	layouts := []string{
 		time.RFC3339,
 		"2006-01-02",
