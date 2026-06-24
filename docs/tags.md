@@ -8,7 +8,7 @@ All tags go in the body section (after `---`).
 |-----|-------------|
 | `<h1>text</h1>` – `<h6>text</h6>` | Heading level 1–6 |
 | `<p>text</p>` | Paragraph with inline formatting |
-| `<w:flags>text</w>` | Wrapped paragraph (`c` = center, `b` = bold) |
+| `<w:flags>text</w:flags>` | Wrapped paragraph (`c` = center, `b` = bold, `i` = italic, `u` = underline) |
 | `<br>` | Line break |
 | `<hr attrs>` | Horizontal rule |
 | `<pb>` / `<page-break>` | Page break |
