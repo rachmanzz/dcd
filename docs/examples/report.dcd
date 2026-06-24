@@ -80,7 +80,8 @@ keys=title, year, department
 
 [section:next-page 1]
 name=metrics
-formats=[date:2006-01-02]
+keys=date
+formats=[date:dd-MM-yyyy]
 
 --- BODY ---
 <h2>Key Metrics</h2>
