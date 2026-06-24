@@ -1,0 +1,168 @@
+package render
+
+import (
+	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/rachmanzz/dcd/data"
+	"github.com/rachmanzz/dcd/parse"
+)
+
+var varRe = regexp.MustCompile(`\{\{[^}]+\}\}`)
+
+type Compiler struct {
+	doc *parse.Doc
+	ds  *data.DataSet
+	r   Renderer
+}
+
+func New(doc *parse.Doc, ds *data.DataSet, r Renderer) *Compiler {
+	return &Compiler{doc: doc, ds: ds, r: r}
+}
+
+func (c *Compiler) Run(output string) error {
+	if err := c.r.SetPageStyle(c.collectSection("style")); err != nil {
+		return fmt.Errorf("render page style: %w", err)
+	}
+	if err := c.r.SetDefaultStyle(c.collectSection("style")); err != nil {
+		return fmt.Errorf("set default style: %w", err)
+	}
+	if err := c.applyHeadingStyles(); err != nil {
+		return fmt.Errorf("apply heading styles: %w", err)
+	}
+	if err := c.applyTableStyles(); err != nil {
+		return fmt.Errorf("apply table styles: %w", err)
+	}
+	if err := c.applyMetadata(); err != nil {
+		return err
+	}
+	if err := c.applyHeaderFooter(); err != nil {
+		return err
+	}
+
+	for _, sec := range c.doc.Sections {
+		if sec.Body == "" {
+			continue
+		}
+		if err := c.renderSection(sec); err != nil {
+			return fmt.Errorf("render section %q: %w", sec.Name, err)
+		}
+	}
+
+	return c.r.Save(output)
+}
+
+func (c *Compiler) collectSection(name string) map[string]string {
+	for _, sec := range c.doc.Sections {
+		if sec.Name == name {
+			return sec.Props
+		}
+	}
+	return nil
+}
+
+func (c *Compiler) applyHeadingStyles() error {
+	for _, sec := range c.doc.Sections {
+		if strings.HasPrefix(sec.Name, "style:heading-") {
+			levelStr := strings.TrimPrefix(sec.Name, "style:heading-")
+			level, err := strconv.Atoi(levelStr)
+			if err != nil || level < 1 || level > 6 {
+				continue
+			}
+			if err := c.r.SetHeadingStyle(level, sec.Props); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (c *Compiler) applyTableStyles() error {
+	for _, sec := range c.doc.Sections {
+		if strings.HasPrefix(sec.Name, "table-style ") {
+			name := strings.TrimPrefix(sec.Name, "table-style ")
+			if name == "" {
+				continue
+			}
+			if err := c.r.SetTableStyle(name, sec.Props); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (c *Compiler) applyMetadata() error {
+	if props := c.collectSection("title"); props != nil {
+		if err := c.r.SetMetadata(props); err != nil {
+			return fmt.Errorf("set metadata: %w", err)
+		}
+	}
+	return nil
+}
+
+func (c *Compiler) applyHeaderFooter() error {
+	if props := c.collectSection("header"); props != nil {
+		if err := c.r.SetHeader(props); err != nil {
+			return fmt.Errorf("set header: %w", err)
+		}
+	}
+	if props := c.collectSection("footer"); props != nil {
+		if err := c.r.SetFooter(props); err != nil {
+			return fmt.Errorf("set footer: %w", err)
+		}
+	}
+	return nil
+}
+
+func (c *Compiler) renderSection(sec parse.Section) error {
+	if sec.Props["layout"] != "" || sec.Props["orientation"] != "" {
+		if err := c.r.SetPageStyle(sec.Props); err != nil {
+			return err
+		}
+	}
+
+	body := c.expandLoops(sec.Body)
+	body = resolveBuiltins(body)
+	body = c.applyFormats(body, sec.Props["formats"])
+	body = c.ds.Resolve(body)
+	if body == "" {
+		return nil
+	}
+	return c.renderBody(body)
+}
+
+func (c *Compiler) applyFormats(body, formats string) string {
+	if formats == "" {
+		return body
+	}
+	fmtMap := parseFormats(formats)
+	if fmtMap == nil {
+		return body
+	}
+	return varRe.ReplaceAllStringFunc(body, func(match string) string {
+		path := match[2 : len(match)-2]
+		path = strings.TrimSpace(path)
+		// Extract the last component as the key
+		parts := strings.Split(path, ".")
+		key := parts[len(parts)-1]
+		fmtStr, ok := fmtMap[key]
+		if !ok {
+			return match
+		}
+		if val, okVal := c.ds.Get(path); okVal {
+			return applyFormat(fmt.Sprintf("%v", val), fmtStr)
+		}
+		return match
+	})
+}
+
+func resolveBuiltins(s string) string {
+	now := time.Now()
+	date := now.Format("2006-01-02")
+	s = strings.ReplaceAll(s, "{{date}}", date)
+	return s
+}

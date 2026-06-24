@@ -1,0 +1,83 @@
+[style]
+layout=A4
+unit=mm
+m=20
+font-family=Arial
+font-size=10
+font-color=#000000
+
+[style:heading-1]
+font-size=18
+font-color=#1F3864
+bold=true
+border-bottom=single
+
+[table-style header]
+shading=#4472C4
+font-color=#FFFFFF
+font-weight=bold
+align=center
+border-bottom=single
+
+[table-style alt]
+shading=#D9E2F3
+
+[table-style total]
+font-weight=bold
+border-bottom=single
+
+[header]
+left=INVOICE
+right=Page {{page}}
+font-size=8
+font-color=#666666
+
+[section 0]
+name=header
+
+--- BODY ---
+<h1>INVOICE</h1>
+
+<p><b>Invoice #:</b> INV-2025-0042</p>
+<p><b>Date:</b> {{date}}</p>
+<br>
+<h2>Bill To</h2>
+<p>Acme Corporation</p>
+<p>123 Business Ave, Suite 400</p>
+<p>San Francisco, CA 94105</p>
+
+[section:next-page 1]
+name=items
+var=invoice
+keys=items
+
+--- BODY ---
+<h2>Items</h2>
+<table border>
+  <row style=header>
+    <col align=center>#</col>
+    <col>Description</col>
+    <col align=center>Qty</col>
+    <col align=right>Unit Price</col>
+    <col align=right>Total</col>
+  </row>
+  <loop:row x from invoice.items>
+    <row>
+      <col align=center>{{x.id}}</col>
+      <col>{{x.desc}}</col>
+      <col align=center>{{x.qty}}</col>
+      <col align=right>${{x.price}}</col>
+      <col align=right>${{x.total}}</col>
+    </row>
+  </loop:row>
+  <row style=total>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col align=right><b>Grand Total</b></col>
+    <col align=right><b>${{invoice.total}}</b></col>
+  </row>
+</table>
+
+<hr>
+<p align=right><i>Thank you for your business!</i></p>

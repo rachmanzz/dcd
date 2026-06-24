@@ -1,0 +1,100 @@
+[style]
+layout=A4
+unit=mm
+m=20
+font-family="Segoe UI"
+font-size=11
+
+[title]
+title=DCD Feature Showcase
+
+[header]
+left=Features Demo
+right={{date}}
+font-size=8
+font-color=#888888
+
+[footer]
+left={{title}}
+right=Page {{page}}
+font-size=8
+font-color=#888888
+
+[section 0]
+name=intro
+
+--- BODY ---
+<h1>DCD Feature Showcase</h1>
+<p>This document demonstrates all supported features of the <b>DCD</b> document compiler.</p>
+
+<h2>Text Formatting</h2>
+<p>Normal paragraph with <b>bold</b>, <i>italic</i>, and <u>underline</u>.</p>
+<p>Combined: <b><i>Bold and Italic</i></b></p>
+<w:c>Centered Block</w:c>
+<w:b>Bold Block</w:b>
+<w:c|b>Centered Bold Block</w:c|b>
+
+<h2>Headings</h2>
+<h1>Heading 1</h1>
+<h2>Heading 2</h2>
+<h3>Heading 3</h3>
+<h4>Heading 4</h4>
+<h5>Heading 5</h5>
+<h6>Heading 6</h6>
+
+<h2>Lists</h2>
+<h3>Unordered</h3>
+<ul>
+  <li>First item</li>
+  <li>Second item
+    <ul>
+      <li>Nested item A</li>
+      <li>Nested item B</li>
+    </ul>
+  </li>
+  <li>Third item</li>
+</ul>
+
+<h3>Ordered</h3>
+<ol>
+  <li>Step one</li>
+  <li>Step two</li>
+  <li>Step three</li>
+</ol>
+
+<h2>Table</h2>
+<table border>
+  <row style=header>
+    <col>Name</col>
+    <col align=center>Type</col>
+    <col align=right>Value</col>
+  </row>
+  <row>
+    <col>Alpha</col>
+    <col align=center>string</col>
+    <col align=right>Hello</col>
+  </row>
+  <row shading=#E8F0FE>
+    <col>Beta</col>
+    <col align=center>number</col>
+    <col align=right>42</col>
+  </row>
+  <row>
+    <col>Gamma</col>
+    <col align=center>boolean</col>
+    <col align=right>true</col>
+  </row>
+</table>
+
+<h2>Horizontal Rules</h2>
+<hr>
+<hr width=75%>
+<hr width=50% color=#4472C4 thick=2pt>
+
+<h2>Page Break</h2>
+<p>Content continues on the next page:</p>
+<pb>
+
+<h2>Hyperlinks</h2>
+<p>Visit <a=https://example.com>Example Website</a>.</p>
+<p>Colored link: <a=https://example.com color=#4472C4>Styled Link</a></p>

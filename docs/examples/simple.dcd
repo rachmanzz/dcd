@@ -1,0 +1,32 @@
+[style]
+layout=A4
+unit=mm
+m=20
+font-family="Times New Roman"
+font-size=12
+font-color=#000000
+
+[section 0]
+name=cover
+
+--- BODY ---
+<h1>Simple Document</h1>
+<p>This is a basic <b>DCD</b> document.</p>
+<p>It demonstrates <i>paragraphs</i>, <u>inline formatting</u>, and headings.</p>
+<br>
+<h2>Features</h2>
+<p>DCD supports multiple <b>section breaks</b>, <i>variables</i>, and more.</p>
+
+[section:next-page 1]
+name=content
+
+--- BODY ---
+<h2>Second Page</h2>
+<p>This content starts on a new page.</p>
+<p>Use <code><pb></code> or <code><page-break></code> for manual page breaks.</p>
+<br>
+<p>Center-aligned block:</p>
+<w:c>Centered Text</w:c>
+<br>
+<p>Bold and centered:</p>
+<w:c|b>Bold & Centered</w:c|b>

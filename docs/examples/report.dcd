@@ -1,0 +1,134 @@
+[style]
+layout=A4
+unit=mm
+m=25
+font-family=Calibri
+font-size=11
+font-color=#333333
+line-height=1.3
+
+[style:heading-1]
+font-family=Calibri
+font-size=22
+font-color=#1F3864
+bold=true
+space-before=24
+space-after=12
+border-bottom=single
+
+[style:heading-2]
+font-family=Calibri
+font-size=16
+font-color=#2E75B6
+bold=true
+space-before=18
+space-after=6
+
+[style:heading-3]
+font-family=Calibri
+font-size=13
+font-color=#2E75B6
+bold=true
+italic=true
+space-before=12
+
+[table-style header]
+shading=#1F3864
+font-color=#FFFFFF
+font-weight=bold
+align=center
+border-bottom=single
+
+[table-style alt]
+shading=#D9E2F3
+
+[title]
+title=Annual Report 2025
+subject=Financial Summary
+author=Finance Team
+
+[header]
+left=Annual Report 2025
+right={{date}}
+font-size=8
+font-color=#999999
+border=bottom
+
+[footer]
+left=Page {{page}}
+center=Confidential
+right={{title}}
+font-size=8
+font-color=#999999
+border=top
+
+[section 0]
+name=cover
+var=report
+keys=title, year, department
+
+--- BODY ---
+<h1>{{report.title}}</h1>
+<p><b>Year:</b> {{report.year}}</p>
+<p><b>Department:</b> {{report.department}}</p>
+<br>
+<hr width=50%>
+<br>
+<h2>Executive Summary</h2>
+<p>This report covers the <b>financial performance</b> of the <i>Engineering Department</i> for the fiscal year <b>{{report.year}}</b>.</p>
+<p>All metrics show positive growth across key performance indicators.</p>
+
+[section:next-page 1]
+name=metrics
+formats=[date:2006-01-02]
+
+--- BODY ---
+<h2>Key Metrics</h2>
+<table border>
+  <row style=header>
+    <col>Metric</col>
+    <col align=center>Q1</col>
+    <col align=center>Q2</col>
+    <col align=center>Q3</col>
+    <col align=center>Q4</col>
+  </row>
+  <row>
+    <col>Revenue</col>
+    <col align=center>$1.2M</col>
+    <col align=center>$1.5M</col>
+    <col align=center>$1.8M</col>
+    <col align=center>$2.1M</col>
+  </row>
+  <row style=alt>
+    <col>Growth</col>
+    <col align=center>5%</col>
+    <col align=center>8%</col>
+    <col align=center>12%</col>
+    <col align=center>15%</col>
+  </row>
+  <row>
+    <col>Customers</col>
+    <col align=center>120</col>
+    <col align=center>145</col>
+    <col align=center>180</col>
+    <col align=center>220</col>
+  </row>
+  <row style=alt>
+    <col>Satisfaction</col>
+    <col align=center>87%</col>
+    <col align=center>89%</col>
+    <col align=center>92%</col>
+    <col align=center>94%</col>
+  </row>
+</table>
+
+<h3>Notes</h3>
+<p>Report generated on: <b>{{date}}</b></p>
+<p>All figures are in <i>USD</i> unless otherwise noted.</p>
+<br>
+<h2>Highlights</h2>
+<ul>
+  <li>Revenue increased by <b>75%</b> year-over-year</li>
+  <li>Customer base grew to <b>220</b> active accounts</li>
+  <li>Satisfaction score reached all-time high of <b>94%</b></li>
+</ul>
