@@ -11,7 +11,7 @@ unit=inch
 orientation=portrait
 font-family="Times New Roman"
 font-size=12
-font-color=#000000
+color=#000000
 line-height=1.5
 m=1
 ```
@@ -52,7 +52,7 @@ orientation=landscape
 |---------------|-------------------|---------------------------|
 | `font-family` | Font family name  | "Times New Roman", Arial  |
 | `font-size`   | Base font size    | 12pt                      |
-| `font-color`  | Text color        | #000000, black            |
+| `color`  | Text color        | #000000, black            |
 | `line-height` | Line spacing      | 1.5                       |
 
 ```
@@ -61,7 +61,7 @@ layout=A4
 unit=inch
 font-family="Times New Roman"
 font-size=12
-font-color=#000000
+color=#000000
 line-height=1.5
 ```
 

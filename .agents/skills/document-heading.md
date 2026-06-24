@@ -13,7 +13,7 @@ m=1
 [style:heading-1]
 font-family="Arial"
 font-size=24
-font-color=#2b5797
+color=#2b5797
 bold=true
 space-before=18
 space-after=12
@@ -22,7 +22,7 @@ border-bottom=1pt
 [style:heading-2]
 font-family="Arial"
 font-size=18
-font-color=#444444
+color=#444444
 bold=true
 space-before=12
 space-after=6
@@ -30,7 +30,7 @@ space-after=6
 [style:heading-3]
 font-family="Arial"
 font-size=14
-font-color=#444444
+color=#444444
 bold=false
 space-before=6
 space-after=3
@@ -51,7 +51,7 @@ Body:
 Local override (higher priority):
 
 ```
-<h1 font-color=red font-size=28>Chapter with local style</h1>
+<h1 color=red font-size=28>Chapter with local style</h1>
 ```
 
 ## Style Properties
@@ -60,7 +60,7 @@ Local override (higher priority):
 |---------------|-------------------------|
 | `font-family` | Heading font            |
 | `font-size`   | Font size (pt)          |
-| `font-color`  | Text color              |
+| `color`  | Text color              |
 | `bold`        | `true` / `false`        |
 | `italic`      | `true` / `false`        |
 | `underline`   | `true` / `false`        |
@@ -71,6 +71,6 @@ Local override (higher priority):
 
 ## Precedence
 
-1. Local attribute on tag `<h1 font-color=red>`
+1. Local attribute on tag `<h1 color=red>`
 2. `[style:heading-N]` global
 3. `[style]` font default

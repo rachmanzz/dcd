@@ -33,6 +33,7 @@ Run:
 
 ```bash
 dcd report.dcd report.docx
+dcd --data report.json report.dcd report.docx
 ```
 
 ## Sections
@@ -74,11 +75,12 @@ dcd report.dcd report.docx
 
 ### Inline Tags (inside `<p>`)
 
-| Tag              | Description |
-|------------------|-------------|
-| `<b>...</b>`     | Bold        |
-| `<i>...</i>`     | Italic      |
-| `<u>...</u>`     | Underline   |
+| Tag               | Description   |
+|-------------------|---------------|
+| `<b>...</b>`      | Bold          |
+| `<i>...</i>`      | Italic        |
+| `<u>...</u>`      | Underline     |
+| `<code>...</code>`| Monospace font|
 
 ### Loop Tags
 

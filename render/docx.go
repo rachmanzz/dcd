@@ -241,6 +241,15 @@ func (d *DocxRenderer) AddParagraph(runs []TextRun) error {
 			}
 		}
 
+		if r.Code {
+			if ctRun.Property == nil {
+				ctRun.Property = &ctypes.RunProperty{}
+			}
+			ctRun.Property.Fonts = &ctypes.RunFonts{
+				Ascii: "Courier New",
+				HAnsi: "Courier New",
+			}
+		}
 		if r.Bold {
 			run.Bold(true)
 		}
@@ -486,9 +495,50 @@ func (d *DocxRenderer) AddList(items []ListItem, ordered bool) error {
 		style = "List Number"
 	}
 	for _, item := range items {
-		if item.Text != "" {
-			p := d.root.AddParagraph(item.Text)
+		if len(item.Runs) > 0 {
+			p := d.root.AddEmptyParagraph()
 			p.Style(style)
+			for _, run := range item.Runs {
+				r := p.AddText(run.Text)
+				ctRun := p.GetCT().Children[len(p.GetCT().Children)-1].Run
+
+				if d.defaultStyle != nil {
+					if fc := d.defaultStyle["font-color"]; fc != "" {
+						r.Color(fc)
+					}
+					if fs := d.defaultStyle["font-size"]; fs != "" {
+						r.Size(uint64(atof(fs)))
+					}
+					if ff := d.defaultStyle["font-family"]; ff != "" {
+						if ctRun.Property == nil {
+							ctRun.Property = &ctypes.RunProperty{}
+						}
+						ctRun.Property.Fonts = &ctypes.RunFonts{
+							Ascii: ff,
+							HAnsi: ff,
+						}
+					}
+				}
+
+				if run.Code {
+					if ctRun.Property == nil {
+						ctRun.Property = &ctypes.RunProperty{}
+					}
+					ctRun.Property.Fonts = &ctypes.RunFonts{
+						Ascii: "Courier New",
+						HAnsi: "Courier New",
+					}
+				}
+				if run.Bold {
+					r.Bold(true)
+				}
+				if run.Italic {
+					r.Italic(true)
+				}
+				if run.Underline {
+					r.Underline(stypes.UnderlineSingle)
+				}
+			}
 		}
 		if len(item.Items) > 0 {
 			if err := d.AddList(item.Items, ordered); err != nil {
@@ -518,7 +568,60 @@ func (d *DocxRenderer) AddTable(rows []TableRow, attrs map[string]string) error 
 		rowShading := row.Props["shading"]
 		for _, cell := range row.Cells {
 			c := tblRow.AddCell()
-			p := c.AddParagraph(cell.Text)
+			p := c.AddParagraph("")
+
+			// Build runs from cell.Runs
+			for _, run := range cell.Runs {
+				r := p.AddText(run.Text)
+				ctRun := p.GetCT().Children[len(p.GetCT().Children)-1].Run
+
+				if d.defaultStyle != nil {
+					if fc := d.defaultStyle["font-color"]; fc != "" {
+						r.Color(fc)
+					}
+					if fs := d.defaultStyle["font-size"]; fs != "" {
+						r.Size(uint64(atof(fs)))
+					}
+					if ff := d.defaultStyle["font-family"]; ff != "" {
+						if ctRun.Property == nil {
+							ctRun.Property = &ctypes.RunProperty{}
+						}
+						ctRun.Property.Fonts = &ctypes.RunFonts{
+							Ascii: ff,
+							HAnsi: ff,
+						}
+					}
+				}
+
+				if run.Code {
+					if ctRun.Property == nil {
+						ctRun.Property = &ctypes.RunProperty{}
+					}
+					ctRun.Property.Fonts = &ctypes.RunFonts{
+						Ascii: "Courier New",
+						HAnsi: "Courier New",
+					}
+				}
+				if run.Bold {
+					r.Bold(true)
+				}
+				if run.Italic {
+					r.Italic(true)
+				}
+				if run.Underline {
+					r.Underline(stypes.UnderlineSingle)
+				}
+
+				// Apply named style font properties to each run
+				if rowStyle != nil {
+					if fc := rowStyle["font-color"]; fc != "" {
+						r.Color(fc)
+					}
+					if rowStyle["font-weight"] == "bold" {
+						r.Bold(true)
+					}
+				}
+			}
 
 			// Determine shading: row style > cell attr > row prop
 			shading := cell.Attrs["shading"]
@@ -568,21 +671,6 @@ func (d *DocxRenderer) AddTable(rows []TableRow, attrs map[string]string) error 
 			case "right":
 				p.Justification(stypes.JustificationRight)
 			}
-
-			// Named style font properties (applied to run)
-			if rowStyle != nil && len(p.GetCT().Children) > 0 {
-				if run := p.GetCT().Children[0].Run; run != nil {
-					if run.Property == nil {
-						run.Property = &ctypes.RunProperty{}
-					}
-					if fc := rowStyle["font-color"]; fc != "" {
-						run.Property.Color = ctypes.NewColor(fc)
-					}
-					if rowStyle["font-weight"] == "bold" {
-						run.Property.Bold = ctypes.OnOffFromBool(true)
-					}
-				}
-			}
 		}
 	}
 	return nil
@@ -595,9 +683,19 @@ func (d *DocxRenderer) AddWrappedParagraph(text string, flags string) error {
 		}
 	}
 	p := d.root.AddParagraph(text)
-	if flags != "" {
-		if flags[0] == 'c' {
+	for _, f := range strings.Split(flags, "|") {
+		switch f {
+		case "c":
 			p.Justification(stypes.JustificationCenter)
+		case "b":
+			if len(p.GetCT().Children) > 0 {
+				if run := p.GetCT().Children[0].Run; run != nil {
+					if run.Property == nil {
+						run.Property = &ctypes.RunProperty{}
+					}
+					run.Property.Bold = ctypes.OnOffFromBool(true)
+				}
+			}
 		}
 	}
 	return nil

@@ -51,13 +51,30 @@ keys=street, city, zip
 | `<loop:ol x from var>...</loop>`  | Iterate + wrap `<ol><li>`       |
 | `<loop:ul x from var>...</loop>`  | Iterate + wrap `<ul><li>`       |
 
-## Inline Tags (inside `<p>` only)
+## Inline Tags (inside `<p>`, `<li>`, `<col>`)
 
 | Tag              | Description             |
 |------------------|-------------------------|
 | `<b>...</b>`     | Bold                    |
 | `<i>...</i>`     | Italic                  |
 | `<u>...</u>`     | Underline               |
+| `<code>...</code>`| Monospace / code font  |
+| `<set:flags>...</set:flags>` | Combined formatting |
+
+### Combined Formatting with `<set:>`
+
+Apply multiple formatting flags simultaneously:
+
+```
+<p><set:b|i>Bold and Italic</set:b|i></p>
+<p><set:b|u>Bold and Underline</set:b|u></p>
+<p><set:i|code>Italic monospace</set:i|code></p>
+<p><set:b|i|u>Bold, Italic, and Underline</set:b|i|u></p>
+```
+
+**Available flags:** `b` (bold), `i` (italic), `u` (underline), `code` (monospace)
+
+**Closing tag:** Can be `</set:flags>` (matching) or `</set>` (simplified)
 
 ## Var Usage
 

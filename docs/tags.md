@@ -21,14 +21,40 @@ All tags go in the body section (after `---`).
 | `width` | `width=50%` or `width=100mm` | Width |
 | `thick` | `thick=2pt` | Thickness |
 
-## Inline Tags (inside `<p>`)
+## Inline Tags
+
+Inline formatting works inside `<p>`, `<li>`, and `<col>` tags.
 
 | Tag | Description |
 |-----|-------------|
 | `<b>text</b>` | Bold |
 | `<i>text</i>` | Italic |
 | `<u>text</u>` | Underline |
+| `<code>text</code>` | Monospace / code font |
+| `<set:flags>text</set>` | Combined formatting |
 | `<a=url>text</a>` | Hyperlink |
+
+### Combined Formatting
+
+Use `<set:flags>` to apply multiple formatting styles:
+
+```html
+<p><set:b|i>Bold and Italic</set:b|i></p>
+<p><set:b|u>Bold and Underline</set:b|u></p>
+<p><set:i|code>Italic monospace</set:i|code></p>
+<p><set:b|i|u>All three</set:b|i|u></p>
+```
+
+**Available flags:** `b`, `i`, `u`, `code`
+
+### Examples
+
+```html
+<p>Paragraph with <b>bold</b> and <i>italic</i></p>
+<p>Combined: <set:b|i>bold-italic</set:b|i></p>
+<li>List item with <code>code</code> and <u>underline</u></li>
+<col>Table cell with <set:b|u>bold-underline</set:b|u> text</col>
+```
 
 ### Hyperlink Attributes
 
@@ -50,13 +76,13 @@ All tags go in the body section (after `---`).
 | `align` | `align=center` | `center` or `right` |
 | `alt` | `alt=Diagram` | Alt text |
 | `border` | `border=1pt` | Border thickness |
-| `shading` | `shading=#f0f0f0` | Background shading |
+| `bg` | `bg=#f0f0f0` | Background shading |
 
 ## Table Tags
 
 ```html
 <table border>
-  <row style=header shading=#e0e0e0>
+  <row style=header bg=#e0e0e0>
     <col>Name</col>
     <col align=center>Age</col>
   </row>
@@ -73,16 +99,16 @@ All tags go in the body section (after `---`).
 |-----------|-----------|-------------|
 | `border` | `<table>` | Enables table grid borders |
 | `style` | `<row>` | Named table row style |
-| `shading` | `<row>` | Row background color |
+| `bg` | `<row>` | Row background color |
 | `align` | `<col>` | `center` / `right` |
-| `shading` | `<col>` | Cell background color |
+| `bg` | `<col>` | Cell background color |
 
 ### Named Table Row Styles
 
 ```ini
-[table-style header]
-shading=#4472C4
-font-color=#ffffff
+[style:table header]
+bg=#4472C4
+color=#ffffff
 font-weight=bold
 align=center
 border-bottom=single
@@ -93,13 +119,18 @@ border-bottom=single
 ```html
 <ul>
   <li>Item 1</li>
-  <li>Item 2
-    <ol>
-      <li>Sub-item</li>
-    </ol>
-  </li>
+  <li>Item 2</li>
+  <li>Item 3</li>
 </ul>
+
+<ol>
+  <li>Step 1</li>
+  <li>Step 2</li>
+  <li>Step 3</li>
+</ol>
 ```
+
+**Note:** Nested lists are **not supported**. Nested list tags will be stripped from the output.
 
 ## Loop Tags
 

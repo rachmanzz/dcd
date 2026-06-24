@@ -10,7 +10,7 @@ A `.dcd` file is split into sections delimited by `[section-name]` headers.
 |---------|---------|
 | `[style]` | Page layout and default text style |
 | `[style:heading-N]` | Heading style (N = 1–6) |
-| `[table-style name]` | Named table row style |
+| `[style:table name]` | Named table row style |
 | `[title]` | Document metadata |
 | `[header]` | Page header |
 | `[footer]` | Page footer |
@@ -98,3 +98,78 @@ Inside `<loop x from source>`, use `{{x.field}}`.
 | inch | `in` | 25.4 |
 | pt | — | 0.3528 |
 | pica | — | 4.2333 |
+
+## New Features (v0.2.0)
+
+### Combined Inline Formatting
+
+Use `<set:flags>` for multiple formatting styles:
+
+```html
+<p><set:b|i>Bold and Italic</set:b|i></p>
+<p><set:b|i|u>All three styles</set:b|i|u></p>
+```
+
+**Available flags:** `b`, `i`, `u`, `code`
+
+### Loop Styling
+
+Apply style to first item only:
+
+```html
+<loop:row style.first=header x from items>
+  <col>{{x.name}}</col>
+</loop:row>
+```
+
+**Position flexible:** Can be before or after `x from items`
+
+### Dynamic Styles
+
+Resolve style names from variables:
+
+```html
+<row style={{myStyleVar}}>
+  <col>Data</col>
+</row>
+```
+
+### Loop Dot Notation
+
+Access nested data in loops:
+
+```html
+<loop:row x from invoice.items>
+  <col>{{x.id}}</col>
+  <col>{{x.name}}</col>
+</loop:row>
+```
+
+## Property Names (v0.2.0)
+
+### Updated Names
+
+| Old Name (deprecated) | New Name | Usage |
+|----------------------|----------|-------|
+| `font-color` | `color` | Text color |
+| `shading` | `bg` | Background color |
+
+**Migration:** Replace old names with new names in all `.dcd` files.
+
+**Example:**
+```ini
+# Old
+[style]
+font-color=#000000
+
+# New
+[style]
+color=#000000
+```
+
+## Limitations
+
+- **Nested lists:** Not supported. Use flat lists only.
+- **PDF inline formatting:** Limited support in lists/tables (use DOCX for rich formatting).
+
+See `KNOWN-LIMITATIONS.md` for details.

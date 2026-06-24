@@ -9,13 +9,15 @@ import (
 var (
 	hRe         = regexp.MustCompile(`^<h(\d)(\s+[^>]*)?>(.+)</h(\d)>$`)
 	pRe         = regexp.MustCompile(`^<p>(.*)</p>$`)
-	wRe         = regexp.MustCompile(`^<w:([^>]+)>(.*)</w>$`)
+	wRe         = regexp.MustCompile(`^<w:([^>]+)>(.*)</w[^>]*>$`)
 	imgRe       = regexp.MustCompile(`^<img=(\S+)\s*(.*?)>$`)
 	linkRe      = regexp.MustCompile(`<a=(\S+?)(\s+[^>]*)?>([^<]+)</a>`)
-	loopRe      = regexp.MustCompile(`(?s)<loop(?::(\w+))?\s+(\w+)\s+from\s+(\w+)>(.*?)</loop(?::\w+)?>`)
+	loopRe      = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+style\.first=(\w+))?>(.*?)</loop(?::\w+)?>`)
 	bRe         = regexp.MustCompile(`<b>(.*?)</b>`)
 	iRe         = regexp.MustCompile(`<i>(.*?)</i>`)
 	uRe         = regexp.MustCompile(`<u>(.*?)</u>`)
+	codeRe      = regexp.MustCompile(`<code>(.*?)</code>`)
+	setRe       = regexp.MustCompile(`<set:([^>]+)>(.*?)</set(?::[^>]+)?>`)
 	brRe        = regexp.MustCompile(`^<br>$`)
 	hrRe        = regexp.MustCompile(`^<hr(\s+[^>]*)?>$`)
 	pageBreakRe = regexp.MustCompile(`^<pb>$|^<page-break>$`)
@@ -75,13 +77,17 @@ func (c *Compiler) renderBody(body string) error {
 func (c *Compiler) expandLoops(body string) string {
 	return loopRe.ReplaceAllStringFunc(body, func(match string) string {
 		m := loopRe.FindStringSubmatch(match)
-		if len(m) < 5 {
+		if len(m) < 7 {
 			return match
 		}
 		variant := m[1]
-		varName := m[2]
-		sourceName := m[3]
-		tmpl := m[4]
+		styleFirst := m[2]  // style.first before varName
+		if styleFirst == "" {
+			styleFirst = m[5]  // style.first after sourceName
+		}
+		varName := m[3]
+		sourceName := m[4]
+		tmpl := m[6]
 
 		raw, ok := c.ds.Get(sourceName)
 		if !ok {
@@ -103,24 +109,40 @@ func (c *Compiler) expandLoops(body string) string {
 		switch variant {
 		case "ol":
 			var sb strings.Builder
-			for _, item := range items {
-				sb.WriteString("<li>")
+			sb.WriteString("<ol>\n")
+			for i, item := range items {
+				if i == 0 && styleFirst != "" {
+					sb.WriteString(fmt.Sprintf(`<li style=%s>`, styleFirst))
+				} else {
+					sb.WriteString("<li>")
+				}
 				sb.WriteString(item)
 				sb.WriteString("</li>\n")
 			}
-			return "<ol>\n" + sb.String() + "</ol>"
+			sb.WriteString("</ol>")
+			return sb.String()
 		case "ul":
 			var sb strings.Builder
-			for _, item := range items {
-				sb.WriteString("<li>")
+			sb.WriteString("<ul>\n")
+			for i, item := range items {
+				if i == 0 && styleFirst != "" {
+					sb.WriteString(fmt.Sprintf(`<li style=%s>`, styleFirst))
+				} else {
+					sb.WriteString("<li>")
+				}
 				sb.WriteString(item)
 				sb.WriteString("</li>\n")
 			}
-			return "<ul>\n" + sb.String() + "</ul>"
+			sb.WriteString("</ul>")
+			return sb.String()
 		case "row":
 			var sb strings.Builder
-			for _, item := range items {
-				sb.WriteString("<row>")
+			for i, item := range items {
+				if i == 0 && styleFirst != "" {
+					sb.WriteString(fmt.Sprintf(`<row style=%s>`, styleFirst))
+				} else {
+					sb.WriteString("<row>")
+				}
 				sb.WriteString(item)
 				sb.WriteString("</row>\n")
 			}
@@ -210,7 +232,7 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 	}
 
 	if strings.HasSuffix(startLine, "</li>") {
-		return ListItem{Text: startLine[gtIdx+1 : len(startLine)-5]}, start, nil
+		return ListItem{Runs: inlineToRuns(startLine[gtIdx+1 : len(startLine)-5])}, start, nil
 	}
 
 	textAfter := startLine[gtIdx+1:]
@@ -237,38 +259,11 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 
 	raw := strings.TrimSpace(buf.String())
 
-	var children []ListItem
-	for {
-		loc := nestedListRe.FindStringSubmatchIndex(raw)
-		if len(loc) < 6 || loc[0] != 0 {
-			break
-		}
-		if loc[0] > 0 {
-			break
-		}
-		nestedType := raw[loc[2]:loc[3]]
-		inner := raw[loc[4]:loc[5]]
+	// DISABLED: Nested lists not supported
+	// Strip any nested <ul> or <ol> tags to prevent malformed output
+	raw = nestedListRe.ReplaceAllString(raw, "")
 
-		subItems, err := parseNestedListItems(inner, nestedType)
-		if err != nil {
-			return ListItem{}, i, err
-		}
-		children = append(children, ListItem{Items: subItems})
-		raw = raw[loc[1]:]
-	}
-
-	text := raw
-	if len(children) > 0 {
-		for _, loc := range nestedListRe.FindAllStringIndex(raw, -1) {
-			text = strings.TrimSpace(raw[:loc[0]])
-			break
-		}
-	}
-
-	item := ListItem{Text: text}
-	if len(children) > 0 {
-		item.Items = children
-	}
+	item := ListItem{Runs: inlineToRuns(raw)}
 	return item, i, nil
 }
 
@@ -298,7 +293,7 @@ func parseNestedListItems(raw string, listType string) ([]ListItem, error) {
 		// Check for nested list inside this item
 		item := ListItem{}
 		if nlLoc := nestedListRe.FindStringIndex(itemText); nlLoc != nil {
-			item.Text = strings.TrimSpace(itemText[:nlLoc[0]])
+			item.Runs = inlineToRuns(strings.TrimSpace(itemText[:nlLoc[0]]))
 			innerRaw := itemText[nlLoc[0]:]
 			if nlLoc2 := nestedListRe.FindStringSubmatchIndex(innerRaw); len(nlLoc2) >= 6 {
 				innerType := innerRaw[nlLoc2[2]:nlLoc2[3]]
@@ -307,7 +302,7 @@ func parseNestedListItems(raw string, listType string) ([]ListItem, error) {
 				item.Items = subItems
 			}
 		} else {
-			item.Text = itemText
+			item.Runs = inlineToRuns(itemText)
 		}
 
 		items = append(items, item)
@@ -356,7 +351,7 @@ func (c *Compiler) collectRowCells(lines []string, start int) ([]TableCell, int,
 			}
 			attrs := parseAttrs(line[4:gtIdx])
 			text := line[gtIdx+1 : len(line)-6]
-			cells = append(cells, TableCell{Text: text, Attrs: attrs})
+			cells = append(cells, TableCell{Runs: inlineToRuns(text), Attrs: attrs})
 		}
 	}
 	return cells, len(lines), nil
@@ -413,6 +408,10 @@ func (c *Compiler) parseLine(line string) error {
 }
 
 func (c *Compiler) renderParagraph(content string) error {
+	return c.r.AddParagraph(inlineToRuns(content))
+}
+
+func inlineToRuns(content string) []TextRun {
 	parts := splitInline(content)
 	runs := make([]TextRun, 0, len(parts))
 	for _, part := range parts {
@@ -420,15 +419,36 @@ func (c *Compiler) renderParagraph(content string) error {
 		case "a":
 			runs = append(runs, TextRun{Text: part.text, Link: part.url, LinkAttrs: part.linkAttrs})
 		default:
-			runs = append(runs, TextRun{
-				Text:      part.text,
-				Bold:      part.tag == "b",
-				Italic:    part.tag == "i",
-				Underline: part.tag == "u",
-			})
+			// Check if part.tag contains "|" (set:flags format)
+			if strings.Contains(part.tag, "|") {
+				flags := strings.Split(part.tag, "|")
+				run := TextRun{Text: part.text}
+				for _, flag := range flags {
+					switch strings.TrimSpace(flag) {
+					case "b":
+						run.Bold = true
+					case "i":
+						run.Italic = true
+					case "u":
+						run.Underline = true
+					case "code":
+						run.Code = true
+					}
+				}
+				runs = append(runs, run)
+			} else {
+				// Single tag (existing behavior)
+				runs = append(runs, TextRun{
+					Text:      part.text,
+					Bold:      part.tag == "b",
+					Italic:    part.tag == "i",
+					Underline: part.tag == "u",
+					Code:      part.tag == "code",
+				})
+			}
 		}
 	}
-	return c.r.AddParagraph(runs)
+	return runs
 }
 
 func splitInline(s string) []inlinePart {
@@ -479,6 +499,22 @@ func splitInline(s string) []inlinePart {
 		check("b", bRe)
 		check("i", iRe)
 		check("u", uRe)
+		check("code", codeRe)
+		
+		// Check for <set:flags> tag
+		checkSet := func() {
+			loc := setRe.FindStringSubmatchIndex(s[pos:])
+			if len(loc) < 6 {
+				return
+			}
+			idx := loc[0]
+			flags := s[pos+loc[2] : pos+loc[3]]
+			text := s[pos+loc[4] : pos+loc[5]]
+			if best == nil || idx < best.idx {
+				best = &match{tag: flags, text: text, skip: loc[1] - loc[0], idx: idx}
+			}
+		}
+		checkSet()
 
 		if best == nil {
 			parts = append(parts, inlinePart{text: s[pos:]})
@@ -503,7 +539,7 @@ func parseAttrs(s string) map[string]string {
 			k = strings.TrimSpace(k)
 			v = strings.TrimSpace(v)
 			if k != "" {
-				m[k] = v
+				m[normalizePropertyKey(k)] = v
 			}
 		}
 	}

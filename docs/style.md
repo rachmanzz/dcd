@@ -9,7 +9,7 @@ orientation=portrait
 unit=mm
 font-family="Times New Roman"
 font-size=12
-font-color=#000000
+color=#000000
 line-height=1.5
 m=25.4
 ```
@@ -35,7 +35,7 @@ Properties in `[style]` serve as the default for all text:
 |----------|---------|-------------|
 | `font-family` | `Arial` | Font name |
 | `font-size` | `12` | Font size in points |
-| `font-color` | `#000000` | Hex color |
+| `color` | `#000000` | Hex color |
 | `line-height` | `1.5` | Line spacing multiplier |
 | `bold` | `true` | Bold (headings) |
 | `italic` | `true` | Italic (headings) |
@@ -53,7 +53,7 @@ Override defaults per heading level:
 [style:heading-1]
 font-family=Arial
 font-size=24
-font-color=#1F3864
+color=#1F3864
 bold=true
 align=left
 space-before=18
@@ -61,27 +61,27 @@ space-after=12
 border-bottom=single
 ```
 
-## Table Row Styles (`[table-style name]`)
+## Table Row Styles (`[style:table name]`)
 
 ```ini
-[table-style header]
-shading=#4472C4
-font-color=#ffffff
+[style:table header]
+bg=#4472C4
+color=#ffffff
 font-weight=bold
 align=center
 border-bottom=single
 
-[table-style alt]
-shading=#D9E2F3
+[style:table alt]
+bg=#D9E2F3
 ```
 
 ### Table Style Properties
 
 | Property | Description |
 |----------|-------------|
-| `shading` | Row/cell background color |
+| `bg` | Row/cell background color |
 | `align` | `center` / `right` |
-| `font-color` | Text color |
+| `color` | Text color |
 | `font-weight` | `bold` |
 | `border-bottom` | Bottom border on cells |
 
@@ -94,7 +94,7 @@ center=Quarterly Report
 right={{date}}
 font-family=Arial
 font-size=9
-font-color=#666666
+color=#666666
 border=bottom
 
 [footer]
@@ -112,7 +112,7 @@ border=top
 | `right` | Right-aligned content |
 | `font-family` | Font name |
 | `font-size` | Font size in points |
-| `font-color` | Hex color |
+| `color` | Hex color |
 | `border` | `top` or `bottom` line |
 | `margin` | Header/footer margin |
 
@@ -123,3 +123,84 @@ For any rendering property, the value is determined by:
 1. **Local attribute** (on the tag itself, e.g. `align=center`)
 2. **Named style** (heading style or table row style)
 3. **Default style** (from `[style]` section)
+
+## Style Enhancements (v0.2.0)
+
+### Combined Inline Formatting
+
+Beyond single-tag formatting (`<b>`, `<i>`, `<u>`), use `<set:flags>` for multiple styles:
+
+```html
+<p><set:b|i>Bold and Italic</set:b|i></p>
+<p><set:b|u>Bold and Underline</set:b|u></p>
+<p><set:i|code>Italic monospace</set:i|code></p>
+```
+
+**Works in:** Paragraphs, list items, table cells
+
+### Dynamic Row Styling
+
+Resolve style names from variables:
+
+```html
+<row style={{rowStyleVar}}>
+  <col>Data</col>
+</row>
+```
+
+### Loop Styling with style.first
+
+Apply a style to the first iteration only:
+
+```html
+<loop:row style.first=header x from items>
+  <col>{{x.name}}</col>
+</loop:row>
+```
+
+**Result:** First row has `style=header`, remaining rows are plain.
+
+### Inline Attributes
+
+Both `<row>` and `<col>` support inline style attributes:
+
+```html
+<row bg=#f0f0f0>
+  <col color=#000 align=center>Text</col>
+</row>
+```
+
+## Migration Notes (v0.2.0)
+
+### Property Renames
+
+| Old (deprecated) | New | Applies To |
+|-----------------|-----|------------|
+| `font-color` | `color` | All sections, inline attributes |
+| `shading` | `bg` | Table rows, cells, images |
+
+### Section Format Change
+
+`[table-style name]` → `[style:table name]`
+
+**Before:**
+```ini
+[table-style header]
+shading=#4472C4
+font-color=#ffffff
+```
+
+**After:**
+```ini
+[style:table header]
+bg=#4472C4
+color=#ffffff
+```
+
+### Automated Migration
+
+```bash
+sed -i 's/font-color=/color=/g; s/shading=/bg=/g; s/\[table-style /[style:table /g' file.dcd
+```
+
+See `CHANGES.md` for complete migration guide.

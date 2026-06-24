@@ -18,7 +18,7 @@
 
 ```
 <table border=1>
-  <row shading=#f0f0f0>
+  <row bg=#f0f0f0>
     <col align=center width=30%>Name</col>
     <col align=center width=30%>City</col>
     <col align=center width=40%>Age</col>
@@ -51,7 +51,7 @@
 
 | Property  | Example       | Description          |
 |-----------|---------------|----------------------|
-| `shading` | `#f0f0f0`     | Row background       |
+| `bg`      | `#f0f0f0`     | Row background       |
 | `style`   | `header`      | Named table-style    |
 
 ## Col Properties
@@ -60,22 +60,22 @@
 |-----------|---------------|----------------------|
 | `align`   | `center`      | Text alignment       |
 | `width`   | `30%`         | Column width         |
-| `shading` | `#e0e0e0`     | Cell background      |
+| `bg`      | `#e0e0e0`     | Cell background      |
 | `colspan` | `2`           | Merge columns        |
 | `rowspan` | `2`           | Merge rows           |
 
 ## Named Table Style
 
 ```
-[table-style header]
-shading=#2b5797
-font-color=white
+[style:table header]
+bg=#2b5797
+color=white
 font-weight=bold
 align=center
-border-bottom:2pt
+border-bottom=2pt
 
-[table-style alt]
-shading=#f5f5f5
+[style:table alt]
+bg=#f5f5f5
 ```
 
 Usage:
@@ -91,4 +91,27 @@ Usage:
     <col>Jakarta</col>
   </row>
 </table>
+```
+
+## Loop with style.first
+
+Apply style to first row only:
+
+```
+<table border=1>
+  <loop:row style.first=header x from items>
+    <col>{{x.name}}</col>
+    <col>{{x.value}}</col>
+  </loop:row>
+</table>
+```
+
+## Dynamic Row Style
+
+Use variable for style name:
+
+```
+<row style={{myStyle}}>
+  <col>Data</col>
+</row>
 ```

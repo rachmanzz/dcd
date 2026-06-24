@@ -84,12 +84,13 @@ type TextRun struct {
     Bold      bool
     Italic    bool
     Underline bool
+    Code      bool
     Link      string
     LinkAttrs map[string]string
 }
 
 type TableCell struct {
-    Text  string
+    Runs  []TextRun
     Attrs map[string]string
 }
 
@@ -99,7 +100,7 @@ type TableRow struct {
 }
 
 type ListItem struct {
-    Text  string
+    Runs  []TextRun
     Items []ListItem
 }
 ```
@@ -120,14 +121,139 @@ r.AddParagraph([]render.TextRun{
 // Table
 r.AddTable([]render.TableRow{
     {Cells: []render.TableCell{
-        {Text: "Name", Attrs: map[string]string{"align": "center"}},
-        {Text: "Value"},
+        {Runs: []render.TextRun{{Text: "Name", Bold: true}}, Attrs: map[string]string{"align": "center"}},
+        {Runs: []render.TextRun{{Text: "Value"}}},
     }, Props: map[string]string{"style": "header"}},
     {Cells: []render.TableCell{
-        {Text: "Alpha"},
-        {Text: "42"},
+        {Runs: []render.TextRun{{Text: "Alpha"}}},
+        {Runs: []render.TextRun{{Text: "42"}}},
     }},
 }, map[string]string{"border": "true"})
 
 r.Save("output.docx")
 ```
+
+## Changes in v0.2.0
+
+### Updated Data Types
+
+**ListItem and TableCell now use `Runs` instead of `Text`:**
+
+```go
+// Old (v0.1.x)
+type ListItem struct {
+    Text  string
+    Items []ListItem
+}
+
+type TableCell struct {
+    Text  string
+    Attrs map[string]string
+}
+
+// New (v0.2.0+)
+type ListItem struct {
+    Runs  []TextRun  // Changed: supports rich formatting
+    Items []ListItem
+}
+
+type TableCell struct {
+    Runs  []TextRun  // Changed: supports rich formatting
+    Attrs map[string]string
+}
+```
+
+**Migration:**
+
+```go
+// Old
+cell := TableCell{Text: "Hello"}
+
+// New
+cell := TableCell{Runs: []TextRun{{Text: "Hello"}}}
+
+// With formatting
+cell := TableCell{Runs: []TextRun{
+    {Text: "Bold", Bold: true},
+    {Text: " and "},
+    {Text: "Italic", Italic: true},
+}}
+```
+
+### Property Name Changes
+
+When setting styles programmatically, use new property names:
+
+```go
+// Old
+r.SetDefaultStyle(map[string]string{
+    "font-color": "#000000",
+})
+r.SetTableStyle("header", map[string]string{
+    "shading": "#4472C4",
+})
+
+// New
+r.SetDefaultStyle(map[string]string{
+    "color": "#000000",  // Changed
+})
+r.SetTableStyle("header", map[string]string{
+    "bg": "#4472C4",  // Changed
+})
+```
+
+**Note:** The library automatically normalizes property names, so both old and new names work internally. However, using new names is recommended for consistency.
+
+## Example: Rich Text in Tables
+
+```go
+r := render.NewDocxRenderer()
+
+// Table with rich formatting
+r.AddTable([]render.TableRow{
+    {
+        Cells: []render.TableCell{
+            {Runs: []render.TextRun{
+                {Text: "Product", Bold: true, Underline: true},
+            }},
+            {Runs: []render.TextRun{
+                {Text: "Price", Bold: true},
+            }},
+        },
+        Props: map[string]string{"style": "header"},
+    },
+    {
+        Cells: []render.TableCell{
+            {Runs: []render.TextRun{
+                {Text: "Item A", Italic: true},
+            }},
+            {Runs: []render.TextRun{
+                {Text: "$100", Code: true},
+            }},
+        },
+    },
+}, map[string]string{"border": "1"})
+
+r.Save("output.docx")
+```
+
+## Example: Lists with Formatting
+
+```go
+r.AddList([]render.ListItem{
+    {Runs: []render.TextRun{{Text: "Plain item"}}},
+    {Runs: []render.TextRun{
+        {Text: "Item with ", Bold: false},
+        {Text: "bold", Bold: true},
+        {Text: " text", Bold: false},
+    }},
+    {Runs: []render.TextRun{{Text: "Code item", Code: true}}},
+}, false) // false = unordered list
+```
+
+## See Also
+
+- `parse/` — Parser implementation
+- `render/` — Renderer implementations (DOCX, PDF)
+- `data/` — DataSet for variable resolution
+- `.agents/skills/` — Detailed feature documentation

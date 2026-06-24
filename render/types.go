@@ -5,12 +5,13 @@ type TextRun struct {
 	Bold          bool
 	Italic        bool
 	Underline     bool
+	Code          bool
 	Link          string
 	LinkAttrs     map[string]string
 }
 
 type TableCell struct {
-	Text  string
+	Runs  []TextRun
 	Attrs map[string]string
 }
 
@@ -20,7 +21,7 @@ type TableRow struct {
 }
 
 type ListItem struct {
-	Text  string
+	Runs  []TextRun
 	Items []ListItem
 }
 

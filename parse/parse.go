@@ -8,6 +8,18 @@ import (
 	"strings"
 )
 
+// normalizePropertyKey maps user-facing property names to internal keys
+func normalizePropertyKey(key string) string {
+	switch key {
+	case "color":
+		return "font-color"
+	case "bg":
+		return "shading"
+	default:
+		return key
+	}
+}
+
 func Parse(path string) (*Doc, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -45,9 +57,11 @@ func Parse(path string) (*Doc, error) {
 
 		case cur != nil:
 			if k, v, ok := strings.Cut(trimmed, "="); ok {
-				doc.Sections[len(doc.Sections)-1].Props[strings.TrimSpace(k)] = strings.TrimSpace(v)
+				k = normalizePropertyKey(strings.TrimSpace(k))
+				doc.Sections[len(doc.Sections)-1].Props[k] = strings.TrimSpace(v)
 			} else if k, v, ok := strings.Cut(trimmed, ":"); ok {
-				doc.Sections[len(doc.Sections)-1].Props[strings.TrimSpace(k)] = strings.TrimSpace(v)
+				k = normalizePropertyKey(strings.TrimSpace(k))
+				doc.Sections[len(doc.Sections)-1].Props[k] = strings.TrimSpace(v)
 			}
 			}
 		}

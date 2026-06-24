@@ -6,6 +6,18 @@ import (
 	"time"
 )
 
+// normalizePropertyKey maps user-facing property names to internal keys
+func normalizePropertyKey(key string) string {
+	switch key {
+	case "color":
+		return "font-color"
+	case "bg":
+		return "shading"
+	default:
+		return key
+	}
+}
+
 var fmtRe = regexp.MustCompile(`\[([^:]+):([^\]]+)\]`)
 
 func parsePageSize(layout, orient, customW, customH string) (width, height float64) {

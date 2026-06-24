@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -12,8 +13,9 @@ import (
 
 func main() {
 	format := flag.String("format", "docx", "Output format: docx or pdf")
+	dataFile := flag.String("data", "", "JSON file with variables")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: dcd [--format docx|pdf] <input.dcd> [output]\n")
+		fmt.Fprintf(os.Stderr, "Usage: dcd [--format docx|pdf] [--data file.json] <input.dcd> [output]\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -40,7 +42,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	ds := data.NewDataSet(nil)
+	var src any
+	if *dataFile != "" {
+		b, err := os.ReadFile(*dataFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading --data: %v\n", err)
+			os.Exit(1)
+		}
+		if err := json.Unmarshal(b, &src); err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing --data: %v\n", err)
+			os.Exit(1)
+		}
+	}
+	ds := data.NewDataSet(src)
 
 	var r render.Renderer
 	switch *format {

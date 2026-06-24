@@ -22,7 +22,7 @@ center={{date}}
 | `right`       | Right column content                   |
 | `font-family` | Header/footer font override            |
 | `font-size`   | Font size                              |
-| `font-color`  | Text color                             |
+| `color`  | Text color                             |
 | `border`      | `top`, `bottom`, `none`                |
 | `margin`      | Distance from header/footer to content |
 | `first-page`  | `true` / `false` — show on page 1     |
@@ -50,7 +50,7 @@ left={{title}}
 right={{page}} / {{total}}
 
 font-size=10
-font-color=#999999
+color=#999999
 border=bottom
 margin=0.3
 
@@ -58,7 +58,7 @@ margin=0.3
 center={{date}}
 
 font-size=9
-font-color=#666666
+color=#666666
 border=top
 margin=0.2
 first-page=false

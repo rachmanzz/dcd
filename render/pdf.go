@@ -232,7 +232,7 @@ func (p *PdfRenderer) AddParagraph(runs []TextRun) error {
 
 	allPlain := true
 	for _, run := range runs {
-		if run.Bold || run.Italic || run.Underline || run.Link != "" {
+		if run.Bold || run.Italic || run.Underline || run.Code || run.Link != "" {
 			allPlain = false
 			break
 		}
@@ -253,12 +253,15 @@ func (p *PdfRenderer) AddParagraph(runs []TextRun) error {
 				for _, run := range runs {
 					var opts []template.TextOption
 					opts = append(opts, defaultOpts...)
-					if run.Bold {
-						opts = append(opts, template.Bold())
-					}
-					if run.Italic {
-						opts = append(opts, template.Italic())
-					}
+				if run.Code {
+					opts = append(opts, template.FontFamily("Courier New"))
+				}
+				if run.Bold {
+					opts = append(opts, template.Bold())
+				}
+				if run.Italic {
+					opts = append(opts, template.Italic())
+				}
 				isLink := run.Link != ""
 				if isLink && run.LinkAttrs["underline"] == "false" {
 					// skip underline
@@ -416,12 +419,19 @@ func (p *PdfRenderer) AddList(items []ListItem, ordered bool) error {
 	if err := p.init(); err != nil {
 		return err
 	}
+	
+	// Flatten to plain text strings for gpdf List/OrderedList
+	// These APIs don't support rich text formatting per item yet
 	var texts []string
 	var flatten func(items []ListItem)
 	flatten = func(items []ListItem) {
 		for _, item := range items {
-			if item.Text != "" {
-				texts = append(texts, item.Text)
+			if len(item.Runs) > 0 {
+				var buf strings.Builder
+				for _, run := range item.Runs {
+					buf.WriteString(run.Text)
+				}
+				texts = append(texts, buf.String())
 			}
 			if len(item.Items) > 0 {
 				flatten(item.Items)
@@ -452,12 +462,22 @@ func (p *PdfRenderer) AddTable(rows []TableRow, attrs map[string]string) error {
 		return nil
 	}
 	page := p.getPage()
+	
+	// Convert runs to plain text for gpdf table API
+	runsToText := func(runs []TextRun) string {
+		var buf strings.Builder
+		for _, run := range runs {
+			buf.WriteString(run.Text)
+		}
+		return buf.String()
+	}
+	
 	var header []string
 	var data [][]string
 	if len(rows) == 1 {
 		data = make([][]string, 1)
 		for _, cell := range rows[0].Cells {
-			data[0] = append(data[0], cell.Text)
+			data[0] = append(data[0], runsToText(cell.Runs))
 		}
 	} else {
 		for i, r := range rows {
@@ -465,7 +485,7 @@ func (p *PdfRenderer) AddTable(rows []TableRow, attrs map[string]string) error {
 			style := p.tableStyles[styleName]
 			cells := make([]string, len(r.Cells))
 			for j, cell := range r.Cells {
-				cells[j] = cell.Text
+				cells[j] = runsToText(cell.Runs)
 			}
 			if style != nil && i == 0 {
 				header = cells
@@ -476,12 +496,12 @@ func (p *PdfRenderer) AddTable(rows []TableRow, attrs map[string]string) error {
 		if header == nil {
 			header = make([]string, len(rows[0].Cells))
 			for j, cell := range rows[0].Cells {
-				header[j] = cell.Text
+				header[j] = runsToText(cell.Runs)
 			}
 			for _, r := range rows[1:] {
 				cells := make([]string, len(r.Cells))
 				for j, cell := range r.Cells {
-					cells[j] = cell.Text
+					cells[j] = runsToText(cell.Runs)
 				}
 				data = append(data, cells)
 			}
@@ -503,8 +523,13 @@ func (p *PdfRenderer) AddWrappedParagraph(text string, flags string) error {
 
 	page := p.getPage()
 	var opts []template.TextOption
-	if flags != "" && flags[0] == 'c' {
-		opts = append(opts, template.AlignCenter())
+	for _, f := range strings.Split(flags, "|") {
+		switch f {
+		case "c":
+			opts = append(opts, template.AlignCenter())
+		case "b":
+			opts = append(opts, template.Bold())
+		}
 	}
 
 	page.AutoRow(func(r *template.RowBuilder) {

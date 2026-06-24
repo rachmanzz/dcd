@@ -12,13 +12,13 @@ title=DCD Feature Showcase
 left=Features Demo
 right={{date}}
 font-size=8
-font-color=#888888
+color=#888888
 
 [footer]
 left={{title}}
 right=Page {{page}}
 font-size=8
-font-color=#888888
+color=#888888
 
 [section 0]
 name=intro
@@ -74,7 +74,7 @@ name=intro
     <col align=center>string</col>
     <col align=right>Hello</col>
   </row>
-  <row shading=#E8F0FE>
+  <row bg=#E8F0FE>
     <col>Beta</col>
     <col align=center>number</col>
     <col align=right>42</col>

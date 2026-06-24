@@ -1,0 +1,52 @@
+[style]
+layout=A4
+unit=mm
+m=20
+
+[section 0]
+name=test
+
+--- BODY ---
+<h1>Inline Formatting Test</h1>
+
+<h2>Lists with Formatting</h2>
+
+<ul>
+  <li>Plain text item</li>
+  <li><b>Bold</b> text in list</li>
+  <li><i>Italic</i> text in list</li>
+  <li><u>Underline</u> text in list</li>
+  <li><code>Code</code> text in list</li>
+  <li>Mixed: <b>bold</b> and <i>italic</i> and <code>code</code></li>
+</ul>
+
+<ol>
+  <li><b>First</b> ordered item</li>
+  <li><i>Second</i> ordered item</li>
+  <li><u>Third</u> with <code>code</code></li>
+</ol>
+
+<h2>Table with Formatting</h2>
+
+<table border>
+  <row>
+    <col><b>Name</b></col>
+    <col><b>Status</b></col>
+    <col><b>Value</b></col>
+  </row>
+  <row>
+    <col><i>Alpha</i></col>
+    <col><code>active</code></col>
+    <col><u>100</u></col>
+  </row>
+  <row>
+    <col><b>Beta</b></col>
+    <col><i>pending</i></col>
+    <col><code>200</code></col>
+  </row>
+  <row>
+    <col>Mixed: <b>bold</b>, <i>italic</i>, <u>underline</u></col>
+    <col><code>test</code></col>
+    <col>Plain</col>
+  </row>
+</table>

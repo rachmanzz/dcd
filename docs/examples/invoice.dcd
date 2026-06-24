@@ -4,25 +4,25 @@ unit=mm
 m=20
 font-family=Arial
 font-size=10
-font-color=#000000
+color=#000000
 
 [style:heading-1]
 font-size=18
-font-color=#1F3864
+color=#1F3864
 bold=true
 border-bottom=single
 
-[table-style header]
-shading=#4472C4
-font-color=#FFFFFF
+[style:table header]
+bg=#4472C4
+color=#FFFFFF
 font-weight=bold
 align=center
 border-bottom=single
 
-[table-style alt]
-shading=#D9E2F3
+[style:table alt]
+bg=#D9E2F3
 
-[table-style total]
+[style:table total]
 font-weight=bold
 border-bottom=single
 
@@ -30,7 +30,7 @@ border-bottom=single
 left=INVOICE
 right=Page {{page}}
 font-size=8
-font-color=#666666
+color=#666666
 
 [section 0]
 name=header
@@ -62,13 +62,11 @@ keys=items
     <col align=right>Total</col>
   </row>
   <loop:row x from invoice.items>
-    <row>
-      <col align=center>{{x.id}}</col>
-      <col>{{x.desc}}</col>
-      <col align=center>{{x.qty}}</col>
-      <col align=right>${{x.price}}</col>
-      <col align=right>${{x.total}}</col>
-    </row>
+    <col align=center>{{x.id}}</col>
+    <col>{{x.desc}}</col>
+    <col align=center>{{x.qty}}</col>
+    <col align=right>${{x.price}}</col>
+    <col align=right>${{x.total}}</col>
   </loop:row>
   <row style=total>
     <col></col>

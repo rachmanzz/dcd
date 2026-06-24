@@ -1,0 +1,46 @@
+[style]
+layout=A4
+unit=mm
+m=20
+
+[section 0]
+
+--- BODY ---
+<h1>Combined Formatting Demo</h1>
+
+<h2>Using <set:> Tag</h2>
+<p>The <set:code>&lt;set:flags&gt;</set:code> tag allows combining multiple formatting styles.</p>
+
+<h3>Examples</h3>
+<p><set:b|i>Bold and Italic combined</set:b|i></p>
+<p><set:b|u>Bold and Underline combined</set:b|u></p>
+<p><set:i|u>Italic and Underline combined</set:i|u></p>
+<p><set:b|i|u>All three: Bold, Italic, and Underline</set:b|i|u></p>
+
+<h3>With Code Font</h3>
+<p><set:b|code>Bold monospace</set:b|code> is useful for emphasis in code.</p>
+<p><set:i|code>Italic monospace</set:i|code> for comments or notes.</p>
+
+<h3>In Tables</h3>
+<table border>
+  <row>
+    <col><set:b|u>Feature</set:b|u></col>
+    <col><set:b|u>Status</set:b|u></col>
+  </row>
+  <row>
+    <col><set:i>Single tags</set:i></col>
+    <col><set:b>Supported</set:b></col>
+  </row>
+  <row>
+    <col><set:i>Combined tags</set:i></col>
+    <col><set:b>Supported</set:b></col>
+  </row>
+</table>
+
+<h3>In Lists</h3>
+<ul>
+  <li><set:b>Bold item</set:b></li>
+  <li><set:i>Italic item</set:i></li>
+  <li><set:b|i>Bold and Italic item</set:b|i></li>
+  <li><set:u|code>Underlined code item</set:u|code></li>
+</ul>

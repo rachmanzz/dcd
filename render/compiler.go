@@ -82,8 +82,8 @@ func (c *Compiler) applyHeadingStyles() error {
 
 func (c *Compiler) applyTableStyles() error {
 	for _, sec := range c.doc.Sections {
-		if strings.HasPrefix(sec.Name, "table-style ") {
-			name := strings.TrimPrefix(sec.Name, "table-style ")
+		if strings.HasPrefix(sec.Name, "style:table ") {
+			name := strings.TrimPrefix(sec.Name, "style:table ")
 			if name == "" {
 				continue
 			}
@@ -119,6 +119,13 @@ func (c *Compiler) applyHeaderFooter() error {
 }
 
 func (c *Compiler) renderSection(sec parse.Section) error {
+	// Insert page break for section:next-page
+	if strings.HasPrefix(sec.Name, "section:next-page") {
+		if err := c.r.AddPageBreak(); err != nil {
+			return err
+		}
+	}
+
 	if sec.Props["layout"] != "" || sec.Props["orientation"] != "" {
 		if err := c.r.SetPageStyle(sec.Props); err != nil {
 			return err
@@ -129,6 +136,7 @@ func (c *Compiler) renderSection(sec parse.Section) error {
 	body = resolveBuiltins(body)
 	body = c.applyFormats(body, sec.Props["formats"])
 	body = c.ds.Resolve(body)
+	body = resolveRowStyles(body)  // Resolve style={{var}} after variable resolution
 	if body == "" {
 		return nil
 	}
@@ -165,4 +173,11 @@ func resolveBuiltins(s string) string {
 	date := now.Format("2006-01-02")
 	s = strings.ReplaceAll(s, "{{date}}", date)
 	return s
+}
+
+func resolveRowStyles(body string) string {
+	// Resolve style={{var}} in row/li tags after variables are already resolved
+	// Pattern matches: <row style={{...}}> or <li style={{...}}>
+	re := regexp.MustCompile(`<(row|li)\s+style=\{\{([^}]+)\}\}`)
+	return re.ReplaceAllString(body, `<$1 style=$2`)
 }

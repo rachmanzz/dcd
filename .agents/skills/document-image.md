@@ -30,4 +30,4 @@ Static path:
 | `align`    | `center`       | `left`, `center`, `right`   |
 | `alt`      | "photo"        | Alternative text            |
 | `border`   | `1`            | Border width                |
-| `shading`  | `#f0f0f0`      | Background container        |
+| `bg`  | `#f0f0f0`      | Background container        |
