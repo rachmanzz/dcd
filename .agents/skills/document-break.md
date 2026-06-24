@@ -48,5 +48,5 @@ start-page=1
 |---------------|-------------------------------------|
 | `layout`      | Page size: `A4`, `Letter`, `Legal`, `A3`, `A5`, `B5`, `custom` |
 | `orientation` | `portrait` / `landscape`            |
-| `start-page`  | Starting page number (default 1)    |
+| `start-page`  | Starting page number (default 1) — recognized, not yet implemented |
 | `title`       | Section title (for navigation)      |

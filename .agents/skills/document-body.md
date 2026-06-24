@@ -46,7 +46,6 @@ keys=title, message
 | `formats`    | Per-key format: `[key:format]`. Defines the output format of a key. The key must be listed in `keys`. When formatting a var object key (e.g. `info.name`), `keys` must include `info.name`. |
 | `layout`     | Page size: `A4`, `Letter`, `Legal`, `A3`, `A5`, `B5`, `custom` (overrides `[style]`) |
 | `orientation`| `portrait` / `landscape` (overrides `[style]`) |
-| `start-page` | Starting page number (default 1)              |
 
 ## Block Tags (outside `<p>`)
 
