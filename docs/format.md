@@ -24,7 +24,7 @@ A `.dcd` file is split into sections delimited by `[section-name]` headers.
 name=cover
 var=data
 keys=title, author
-formats=[date_field:02-01-2006]
+formats=[date_field:dd-MM-yyyy]
 layout=A4
 orientation=portrait
 
@@ -46,9 +46,9 @@ The body marker is exactly `---` on its own line.
 | Property | Applies To | Description |
 |----------|-----------|-------------|
 | `name` | `[section N]` | Section identifier |
-| `var` | `[section N]` | Variable prefix for `{{var.key}}` |
-| `keys` | `[section N]` | Comma-separated key names |
-| `formats` | `[section N]` | Date format mappings: `[key:GoDateFormat]` |
+| `var` | `[section N]` | Comma-separated variable names, each is an **object/map**. First name is prefix for `{{name.key}}` via `keys`. Subsequent names are data sources for `<loop x from name>`. |
+| `keys` | `[section N]` | Comma-separated key names. Used standalone when `var` is not needed. Required when `var` is absent. |
+| `formats` | `[section N]` | Per-key format mappings: `[key:format]`. Key must be listed in `keys`. |
 | `layout` | `[section N]` | Page size (overrides `[style]`) |
 | `orientation` | `[section N]` | `portrait` / `landscape` |
 
@@ -76,6 +76,23 @@ Inside `<loop x from source>`, use `{{x.field}}`.
 | `{{page}}` | Page number field |
 | `{{total}}` | Total pages field (DOCX only) |
 | `{{title}}` | Document title from `[title]` |
+
+## Format Specifiers
+
+Format is defined as `[key:format]` in the `formats` property.
+
+| Specifier | Description     |
+|-----------|-----------------|
+| `dd`      | Day (01–31)     |
+| `MM`      | Month (01–12)   |
+| `yyyy`    | Year (4 digit)  |
+| `HH`      | Hour (00–23)    |
+| `mm`      | Minute (00–59)  |
+| `ss`      | Second (00–59)  |
+
+Example: `[date_field:yyyy-MM-dd]` → `2026-06-24`
+
+Besides the specifiers above, format also supports regex patterns like `\d`, `\w`, or other regex.
 
 ## Page Sizes
 
