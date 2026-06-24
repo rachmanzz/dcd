@@ -8,6 +8,7 @@ color=#000000
 
 [section 0]
 name=cover
+keys=
 
 --- BODY ---
 <h1>Simple Document</h1>
@@ -19,6 +20,7 @@ name=cover
 
 [section:next-page 1]
 name=content
+keys=
 
 --- BODY ---
 <h2>Second Page</h2>
