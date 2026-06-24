@@ -9,7 +9,7 @@ import (
 var (
 	hRe         = regexp.MustCompile(`^<h(\d)(\s+[^>]*)?>(.+)</h(\d)>$`)
 	pRe         = regexp.MustCompile(`^<p>(.*)</p>$`)
-	wRe         = regexp.MustCompile(`^<w:([^>]+)>(.*)</w[^>]*>$`)
+	wRe         = regexp.MustCompile(`^<w:([^>]+)>(.*)</w:([^>]+)>$`)
 	imgRe       = regexp.MustCompile(`^<img=(\S+)\s*(.*?)>$`)
 	linkRe      = regexp.MustCompile(`<a=(\S+?)(\s+[^>]*)?>([^<]+)</a>`)
 	loopRe      = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+style\.first=(\w+))?>(.*?)</loop(?::\w+)?>`)
@@ -385,7 +385,7 @@ func (c *Compiler) parseLine(line string) error {
 
 	case strings.HasPrefix(line, "<w:"):
 		m := wRe.FindStringSubmatch(line)
-		if len(m) == 3 {
+		if len(m) == 4 && m[1] == m[3] {
 			return c.r.AddWrappedParagraph(m[2], m[1])
 		}
 
