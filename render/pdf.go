@@ -529,6 +529,10 @@ func (p *PdfRenderer) AddWrappedParagraph(text string, flags string) error {
 			opts = append(opts, template.AlignCenter())
 		case "b":
 			opts = append(opts, template.Bold())
+		case "i":
+			opts = append(opts, template.Italic())
+		case "u":
+			opts = append(opts, template.Underline())
 		}
 	}
 
