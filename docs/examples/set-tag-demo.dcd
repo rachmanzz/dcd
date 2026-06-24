@@ -4,6 +4,8 @@ unit=mm
 m=20
 
 [section 0]
+name=demo
+keys=
 
 --- BODY ---
 <h1>Combined Formatting Demo</h1>
