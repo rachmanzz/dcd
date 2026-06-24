@@ -55,8 +55,6 @@ dcd --data report.json report.dcd report.docx
 | `var`       | Variable prefix                  |
 | `keys`      | Key list                         |
 | `formats`   | Per-key format                   |
-| `layout`    | `portrait` / `landscape`         |
-| `start-page`| Starting page number             |
 
 ## Body Tags
 

@@ -764,11 +764,6 @@ func (d *DocxRenderer) SetPageStyle(props map[string]string) error {
 		PageMargin: pageMargin,
 	}
 
-	if sp := props["start-page"]; sp != "" {
-		// Omit start-page for now — godocx PageNumbering doesn't support it
-		_ = sp
-	}
-
 	d.root.Document.Body.SectPr = sectPr
 	d.pageWidthMm = w
 	return nil

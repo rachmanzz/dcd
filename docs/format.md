@@ -25,8 +25,6 @@ name=cover
 var=data
 keys=title, author
 formats=[date_field:dd-MM-yyyy]
-layout=A4
-orientation=portrait
 
 --- BODY ---
 Body content here...
@@ -49,8 +47,6 @@ The body marker is exactly `---` on its own line.
 | `var` | `[section N]` | Comma-separated variable names, each is an **object/map**. First name is prefix for `{{name.key}}` via `keys`. Subsequent names are data sources for `<loop x from name>`. |
 | `keys` | `[section N]` | Comma-separated key names. Used standalone when `var` is not needed. Required when `var` is absent. |
 | `formats` | `[section N]` | Per-key format mappings: `[key:format]`. Key must be listed in `keys`. |
-| `layout` | `[section N]` | Page size (overrides `[style]`) |
-| `orientation` | `[section N]` | `portrait` / `landscape` |
 
 ## Variables
 
