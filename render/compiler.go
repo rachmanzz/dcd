@@ -130,12 +130,6 @@ func (c *Compiler) renderSection(sec parse.Section) error {
 		}
 	}
 
-	if sec.Props["layout"] != "" {
-		if err := c.r.SetPageStyle(sec.Props); err != nil {
-			return err
-		}
-	}
-
 	body := c.expandLoops(sec.Body)
 	body = resolveBuiltins(body)
 	body = c.applyFormats(body, sec.Props["formats"])
