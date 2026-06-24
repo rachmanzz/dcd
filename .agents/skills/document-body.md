@@ -27,6 +27,13 @@ keys=street, city, zip
 
 --- BODY ---
 <p>{{addr.street}}, {{addr.city}} - {{addr.zip}}</p>
+
+[section 2]
+name=simple
+keys=title, message
+
+--- BODY ---
+<p>{{title}}: {{message}}</p>
 ```
 
 ## Section
@@ -34,17 +41,21 @@ keys=street, city, zip
 | Property   | Description                            |
 |------------|----------------------------------------|
 | `name`     | Section identifier                     |
-| `var`      | Comma-separated variable names. Pattern: `var=nameA, nameB, ...` — **first** `nameA` is prefix for `{{nameA.key}}` via `keys`. **Subsequent** `nameB` are data source names used by `<loop x from nameB>`. See [Var Usage](#var-usage) below. |
-| `keys`     | Key list, comma or `[...]`             |
-| `formats`  | Per-key format: `[key:format]`         |
+| `var`      | Comma-separated variable names, each is an **object/map**. Pattern: `var=nameA, nameB, ...` — **first** `nameA` is prefix for `{{nameA.key}}` via `keys`. **Subsequent** `nameB` are data source names used by `<loop x from nameB>`. See [Var Usage](#var-usage) below. |
+| `keys`     | Key list, comma or `[...]`. Used when `var` is not needed (standalone). Required when `var` is absent. |
+| `formats`  | Per-key format: `[key:format]`. Defines the output format of a key. The key must be listed in `keys`. When formatting a var object key (e.g. `info.name`), `keys` must include `info.name`. |
 
 ## Block Tags (outside `<p>`)
 
 | Tag                              | Description                     |
 |----------------------------------|---------------------------------|
-| `<w:c>...</w>`                   | Center                          |
-| `<w:b>...</w>`                   | Bold                            |
-| `<w:c|b>...</w>`                 | Center + Bold                   |
+| `<w:c>...</w:c>`                 | Center                          |
+| `<w:b>...</w:b>`                 | Bold                            |
+| `<w:i>...</w:i>`                 | Italic                          |
+| `<w:u>...</w:u>`                 | Underline                       |
+| `<w:c|b>...</w:c|b>`             | Center + Bold                   |
+| `<w:b|i>...</w:b|i>`             | Bold + Italic                   |
+| `<w:b|i|u>...</w:b|i|u>`         | Bold + Italic + Underline       |
 | `<p>`                            | Paragraph                       |
 | `<br>`                           | Line break                      |
 | `<loop x from var>...</loop>`     | Iterate array `var`, each item as `x` |
@@ -93,3 +104,20 @@ var=info, entries
 ## Variables
 
 `{{var.key}}` — e.g. `{{info.username}}`, `{{info.date_field}}`.
+
+## Format Specifiers
+
+Format is defined as `[key:format]` in the `formats` property.
+
+| Specifier | Description     |
+|-----------|-----------------|
+| `dd`      | Day (01–31)     |
+| `MM`      | Month (01–12)   |
+| `yyyy`    | Year (4 digit)  |
+| `HH`      | Hour (00–23)    |
+| `mm`      | Minute (00–59)  |
+| `ss`      | Second (00–59)  |
+
+Example: `[date_field:yyyy-MM-dd]` → `2026-06-24`
+
+Besides the specifiers above, format also supports regex patterns like `\d`, `\w`, or other regex.
