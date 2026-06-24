@@ -29,7 +29,7 @@ keys=title, author
 <p>{{info.author}}</p>
 
 [section:next-page 1]
-layout=landscape
+orientation=landscape
 start-page=1
 
 --- BODY ---
@@ -44,8 +44,9 @@ start-page=1
 
 ### Properties
 
-| Property     | Description                         |
-|--------------|-------------------------------------|
-| `layout`     | `portrait` / `landscape`            |
-| `start-page` | Starting page number (default 1)    |
-| `title`      | Section title (for navigation)      |
+| Property      | Description                         |
+|---------------|-------------------------------------|
+| `layout`      | Page size: `A4`, `Letter`, `Legal`, `A3`, `A5`, `B5`, `custom` |
+| `orientation` | `portrait` / `landscape`            |
+| `start-page`  | Starting page number (default 1)    |
+| `title`       | Section title (for navigation)      |

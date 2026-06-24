@@ -40,10 +40,12 @@ keys=title, message
 
 | Property   | Description                            |
 |------------|----------------------------------------|
-| `name`     | Section identifier                     |
-| `var`      | Comma-separated variable names, each is an **object/map**. Pattern: `var=nameA, nameB, ...` — **first** `nameA` is prefix for `{{nameA.key}}` via `keys`. **Subsequent** `nameB` are data source names used by `<loop x from nameB>`. See [Var Usage](#var-usage) below. |
-| `keys`     | Key list, comma or `[...]`. Used when `var` is not needed (standalone). Required when `var` is absent. |
-| `formats`  | Per-key format: `[key:format]`. Defines the output format of a key. The key must be listed in `keys`. When formatting a var object key (e.g. `info.name`), `keys` must include `info.name`. |
+| `name`       | Section identifier                     |
+| `var`        | Comma-separated variable names, each is an **object/map**. Pattern: `var=nameA, nameB, ...` — **first** `nameA` is prefix for `{{nameA.key}}` via `keys`. **Subsequent** `nameB` are data source names used by `<loop x from nameB>`. See [Var Usage](#var-usage) below. |
+| `keys`       | Key list, comma or `[...]`. Used when `var` is not needed (standalone). Required when `var` is absent. |
+| `formats`    | Per-key format: `[key:format]`. Defines the output format of a key. The key must be listed in `keys`. When formatting a var object key (e.g. `info.name`), `keys` must include `info.name`. |
+| `layout`     | Page size: `A4`, `Letter`, `Legal`, `A3`, `A5`, `B5`, `custom` (overrides `[style]`) |
+| `orientation`| `portrait` / `landscape` (overrides `[style]`) |
 
 ## Block Tags (outside `<p>`)
 
