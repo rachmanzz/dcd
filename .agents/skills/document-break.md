@@ -29,10 +29,9 @@ keys=title, author
 <p>{{info.author}}</p>
 
 [section:next-page 1]
-start-page=1
 
 --- BODY ---
-<p>new section, page number reset to 1</p>
+<p>new section after page break</p>
 ```
 
 | Syntax                           | Description                           |
@@ -40,11 +39,3 @@ start-page=1
 | `[section:next-page N]`          | Section break + page break            |
 
 `N` = section sequence number.
-
-### Properties
-
-| Property      | Description                         |
-|---------------|-------------------------------------|
-| `layout`      | Page size: `A4`, `Letter`, `Legal`, `A3`, `A5`, `B5`, `custom` |
-| `start-page`  | Starting page number (default 1) — recognized, not yet implemented |
-| `title`       | Section title (for navigation)      |
