@@ -34,6 +34,8 @@ color=#666666
 
 [section 0]
 name=header
+keys=date
+formats=[date:dd-MM-yyyy]
 
 --- BODY ---
 <h1>INVOICE</h1>
@@ -49,7 +51,7 @@ name=header
 [section:next-page 1]
 name=items
 var=invoice
-keys=items
+keys=items, total
 
 --- BODY ---
 <h2>Items</h2>
