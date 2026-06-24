@@ -119,6 +119,10 @@ func (c *Compiler) applyHeaderFooter() error {
 }
 
 func (c *Compiler) renderSection(sec parse.Section) error {
+	if err := c.validateSectionProps(sec); err != nil {
+		return fmt.Errorf("section %q: %w", sec.Name, err)
+	}
+
 	// Insert page break for section:next-page
 	if strings.HasPrefix(sec.Name, "section:next-page") {
 		if err := c.r.AddPageBreak(); err != nil {
@@ -141,6 +145,47 @@ func (c *Compiler) renderSection(sec parse.Section) error {
 		return nil
 	}
 	return c.renderBody(body)
+}
+
+// validateSectionProps checks section properties against skill rules.
+// Only [section N] / [section:next-page N] sections are validated.
+func (c *Compiler) validateSectionProps(sec parse.Section) error {
+	name := sec.Name
+	if !strings.HasPrefix(name, "section") {
+		return nil
+	}
+
+	hasVar := sec.Props["var"] != ""
+	hasKeys := false
+	for k := range sec.Props {
+		if k == "keys" {
+			hasKeys = true
+			break
+		}
+	}
+
+	if !hasVar && !hasKeys {
+		return fmt.Errorf("keys required when var is absent")
+	}
+
+	if fmts := sec.Props["formats"]; fmts != "" {
+		fmtMap := parseFormats(fmts)
+		keySet := make(map[string]bool)
+		for _, k := range strings.Split(sec.Props["keys"], ",") {
+			keySet[strings.TrimSpace(k)] = true
+		}
+		for key := range fmtMap {
+			leaf := key
+			if lastDot := strings.LastIndex(key, "."); lastDot >= 0 {
+				leaf = key[lastDot+1:]
+			}
+			if !keySet[leaf] && !keySet[key] {
+				return fmt.Errorf("format key %q not found in keys", key)
+			}
+		}
+	}
+
+	return nil
 }
 
 func (c *Compiler) applyFormats(body, formats string) string {
