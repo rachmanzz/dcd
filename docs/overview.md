@@ -56,7 +56,8 @@ right={{date}}
 
 [section 0]
 name=cover
-formats=[date_field:02-01-2006]
+keys=date_field
+formats=[date_field:dd-MM-yyyy]
 
 --- BODY ---
 <h1>{{title}}</h1>
