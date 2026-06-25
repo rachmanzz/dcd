@@ -22,6 +22,7 @@ type DocxRenderer struct {
 	defaultStyle  map[string]string
 	docTitle      string
 	pageWidthMm   float64
+	unit          string
 }
 
 func NewDocxRenderer() *DocxRenderer {
@@ -729,6 +730,7 @@ func (d *DocxRenderer) SetPageStyle(props map[string]string) error {
 		}
 	}
 
+	d.unit = props["unit"]
 	w, h := parsePageSize(props["layout"], props["orientation"], props["w"], props["h"])
 	l, r, t, b := computeMargins(props)
 
@@ -801,6 +803,20 @@ func (d *DocxRenderer) SetHeader(props map[string]string) error {
 		Type: stypes.HdrFtrDefault,
 		ID:   d.headerRID,
 	}
+
+	if cfg.margin != "" {
+		if d.root.Document.Body.SectPr.PageMargin == nil {
+			d.root.Document.Body.SectPr.PageMargin = &ctypes.PageMargin{}
+		}
+		scale := unitScale(d.unit)
+		m := atof(cfg.margin) * scale
+		headerTwip := int(m * 56.7)
+		d.root.Document.Body.SectPr.PageMargin.Header = &headerTwip
+	}
+
+	if !cfg.firstPage {
+		d.root.Document.Body.SectPr.TitlePg = ctypes.NewGenSingleStrVal(stypes.OnOff("true"))
+	}
 	return nil
 }
 
@@ -840,6 +856,20 @@ func (d *DocxRenderer) SetFooter(props map[string]string) error {
 	d.root.Document.Body.SectPr.FooterReference = &ctypes.FooterReference{
 		Type: stypes.HdrFtrDefault,
 		ID:   d.footerRID,
+	}
+
+	if cfg.margin != "" {
+		if d.root.Document.Body.SectPr.PageMargin == nil {
+			d.root.Document.Body.SectPr.PageMargin = &ctypes.PageMargin{}
+		}
+		scale := unitScale(d.unit)
+		m := atof(cfg.margin) * scale
+		footerTwip := int(m * 56.7)
+		d.root.Document.Body.SectPr.PageMargin.Footer = &footerTwip
+	}
+
+	if !cfg.firstPage {
+		d.root.Document.Body.SectPr.TitlePg = ctypes.NewGenSingleStrVal(stypes.OnOff("true"))
 	}
 	return nil
 }

@@ -1,3 +1,8 @@
+---
+name: dcd-cli
+description: Complete guide to using the DCD command-line interface — installation, options, workflows, and troubleshooting
+---
+
 # CLI Usage
 
 Complete guide to using the DCD command-line interface.
@@ -64,7 +69,7 @@ EOF
 
 # Generate DOCX
 dcd report.dcd
-# → output.docx
+# -> output.docx
 
 # Generate with custom name
 dcd report.dcd my-report.docx
@@ -118,7 +123,7 @@ keys=number,customer,items,total
 <p>Customer: {{invoice.customer}}</p>
 
 <table border>
-  <loop:row style.first=header x from invoice.items>
+  <loop:row x from invoice.items style.first=header>
     <col>{{x.desc}}</col>
     <col align=right>${{x.amount}}</col>
   </loop:row>
@@ -146,7 +151,7 @@ keys=number,customer,items,total
 
 **Generate:**
 ```bash
-dcd --data invoice.json invoice.dcd invoice.docx
+dcd --data data.json invoice.dcd invoice.docx
 ```
 
 ### Multiple Formats
@@ -269,7 +274,7 @@ cat data.json | jq '.invoice.items'
 2. Use `style=name` in `<row>` tag
 3. Verify property names: `bg` not `shading`, `color` not `font-color`
 
-**Migration (v0.1.x → v0.2.0):**
+**Migration (v0.1.x -> v0.2.0):**
 ```bash
 sed -i 's/font-color=/color=/g; s/shading=/bg=/g; s/\[table-style /[style:table /g' *.dcd
 ```
@@ -448,19 +453,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
           go-version: '1.21'
-      
+
       - name: Install DCD
         run: go install github.com/rachmanzz/dcd/cmd/dcd@latest
-      
+
       - name: Generate Documents
         run: |
           dcd --data data.json template.dcd output.docx
-      
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -470,9 +475,6 @@ jobs:
 
 ## See Also
 
-- `programmatic-usage.md` - Use DCD as a Go library
-- `document-body.md` - Body content tags
-- `document-table.md` - Table formatting
-- `document-style.md` - Style configuration
-- `../docs/cli.md` - Full CLI reference
-- `../docs/format.md` - Document format specification
+- `dcd-documents` — Document template syntax reference
+- `golang-programming` — Go library API
+- `dcd-guide` — Project overview and patterns

@@ -1,3 +1,8 @@
+---
+name: dcd-guide
+description: Project overview and development guide for AI agents working with DCD — codebase structure, common tasks, testing patterns, and best practices
+---
+
 # For AI Agents - DCD Project Guide
 
 This guide helps AI assistants (Claude, Gemini, OpenCode, etc.) understand and work effectively with the DCD (Document Compilation Description) project.
@@ -8,7 +13,7 @@ This guide helps AI assistants (Claude, Gemini, OpenCode, etc.) understand and w
 
 **Core Concept:**
 ```
-.dcd template + JSON data → Parser → Compiler → Renderer → .docx/.pdf
+.dcd template + JSON data -> Parser -> Compiler -> Renderer -> .docx/.pdf
 ```
 
 **Language:** Go
@@ -57,7 +62,7 @@ keys=number,items,total
 --- BODY ---
 <h1>Invoice #{{invoice.number}}</h1>
 <table border>
-  <loop:row style.first=header x from invoice.items>
+  <loop:row x from invoice.items style.first=header>
     <col>{{x.desc}}</col>
     <col align=right>${{x.amount}}</col>
   </loop:row>
@@ -73,9 +78,9 @@ keys=number,items,total
 - `[style:table name]` - Table style section
 
 **Deprecated (v0.1.x):**
-- ~~`font-color`~~ → use `color`
-- ~~`shading`~~ → use `bg`
-- ~~`[table-style name]`~~ → use `[style:table name]`
+- ~~`font-color`~~ -> use `color`
+- ~~`shading`~~ -> use `bg`
+- ~~`[table-style name]`~~ -> use `[style:table name]`
 
 ### 3. Variable Resolution
 
@@ -95,6 +100,8 @@ Variables use `{{path.to.field}}` syntax:
 
 Access: `{{invoice.number}}`, `{{invoice.items.0.desc}}`
 
+> **Variable Registration Rule:** Every `{{...}}` variable must be registered in the section's `keys` or `var`. Unregistered variables are treated as literal strings in the output. For array object fields, use dotted path notation (e.g. `items.price` in `keys`).
+
 ### 4. Key Features (v0.2.0)
 
 **Combined Inline Formatting:**
@@ -104,7 +111,7 @@ Access: `{{invoice.number}}`, `{{invoice.items.0.desc}}`
 
 **Loop with First-Row Styling:**
 ```html
-<loop:row style.first=header x from items>
+<loop:row x from items style.first=header>
   <col>{{x.name}}</col>
 </loop:row>
 ```
@@ -187,7 +194,7 @@ When updating docs:
 5. **Regression test:** Ensure no new issues
 6. **Document:** Add to changelog if user-facing
 
-### Task 5: Migration (v0.1.x → v0.2.0)
+### Task 5: Migration (v0.1.x -> v0.2.0)
 
 **Property renames:**
 ```bash
@@ -275,7 +282,7 @@ type Renderer interface {
     SetHeader(props map[string]string) error
     SetFooter(props map[string]string) error
     SetMetadata(props map[string]string) error
-    
+
     AddHeading(text string, level int, attrs map[string]string) error
     AddParagraph(runs []TextRun) error
     AddTable(rows []TableRow, attrs map[string]string) error
@@ -283,7 +290,7 @@ type Renderer interface {
     AddImage(src string, attrs map[string]string) error
     AddLineBreak() error
     AddPageBreak() error
-    
+
     Save(path string) error
 }
 ```
@@ -312,11 +319,9 @@ var highlightRe = regexp.MustCompile(`<highlight>(.*?)</highlight>`)
 
 2. **Parse in renderBody:**
 ```go
-// In renderBody function
 if strings.HasPrefix(line, "<highlight>") {
     content := highlightRe.FindStringSubmatch(line)
     if len(content) > 1 {
-        // Process highlighted text
         c.renderHighlight(content[1])
         continue
     }
@@ -327,7 +332,6 @@ if strings.HasPrefix(line, "<highlight>") {
 ```go
 func (c *Compiler) renderHighlight(text string) error {
     runs := inlineToRuns(text)
-    // Add highlight styling
     for i := range runs {
         runs[i].Highlight = true
     }
@@ -337,7 +341,6 @@ func (c *Compiler) renderHighlight(text string) error {
 
 4. **Update TextRun type:**
 ```go
-// In render/types.go
 type TextRun struct {
     Text      string
     Bold      bool
@@ -352,13 +355,12 @@ type TextRun struct {
 
 5. **Update renderers:**
 ```go
-// In render/docx.go and render/pdf.go
-// Handle runs[i].Highlight in AddParagraph
+// In render/docx.go and render/pdf.go - handle runs[i].Highlight in AddParagraph
 ```
 
 6. **Document:**
    - Update `docs/tags.md`
-   - Update `.agents/skills/document-body.md`
+   - Update `dcd-documents` skill
    - Add example
 
 7. **Test:**
@@ -375,7 +377,6 @@ go build ./...
 
 2. **Use in renderer:**
 ```go
-// In render/compiler.go or specific renderer
 indent := sec.Props["indent"]
 if indent != "" {
     // Apply indentation
@@ -393,7 +394,6 @@ if indent != "" {
 
 1. **Update loop regex:**
 ```go
-// In render/body.go
 var loopRe = regexp.MustCompile(`<loop(?::(\w+))?\s+(?:style\.first=(\w+)\s+)?(\w+)\s+from\s+([\w.]+)(?:\s+style\.first=(\w+))?>`)
 ```
 
@@ -482,13 +482,13 @@ When introducing breaking changes:
 
 ### 1. Property Name Confusion
 
-❌ **Wrong:**
+**Wrong:**
 ```ini
 [style]
 font-color=#000000
 ```
 
-✅ **Correct:**
+**Correct:**
 ```ini
 [style]
 color=#000000
@@ -496,24 +496,24 @@ color=#000000
 
 ### 2. Section Format
 
-❌ **Wrong:**
+**Wrong:**
 ```ini
 [table-style header]
 ```
 
-✅ **Correct:**
+**Correct:**
 ```ini
 [style:table header]
 ```
 
 ### 3. Variable Access
 
-❌ **Wrong:**
+**Wrong:**
 ```html
 <p>{{items}}</p>  <!-- Array not expanded -->
 ```
 
-✅ **Correct:**
+**Correct:**
 ```html
 <loop x from items>
   <p>{{x.name}}</p>
@@ -522,7 +522,7 @@ color=#000000
 
 ### 4. Nested Lists
 
-❌ **Not Supported:**
+**Not Supported:**
 ```html
 <ul>
   <li>Item
@@ -533,7 +533,7 @@ color=#000000
 </ul>
 ```
 
-✅ **Use Flat Lists:**
+**Use Flat Lists:**
 ```html
 <ul>
   <li>Item</li>
@@ -544,12 +544,12 @@ color=#000000
 
 ### 5. Inline Tags Scope
 
-❌ **Wrong:**
+**Wrong:**
 ```html
 <h1><b>Bold heading</b></h1>  <!-- Inline in block -->
 ```
 
-✅ **Correct:**
+**Correct:**
 ```html
 <h1>Bold heading</h1>  <!-- Use style properties -->
 
@@ -598,9 +598,9 @@ varRe := regexp.MustCompile(`\{\{([^}]+)\}\}`)
 
 ### Property Normalization
 
-User input → Internal representation:
-- `color` → `font-color`
-- `bg` → `shading`
+User input -> Internal representation:
+- `color` -> `font-color`
+- `bg` -> `shading`
 
 Function: `normalizePropertyKey()` in `parse/parse.go` and `render/style.go`
 
@@ -639,11 +639,9 @@ Function: `normalizePropertyKey()` in `parse/parse.go` and `render/style.go`
 - Skill files: `./*.md` (this directory)
 
 **Essential Skills:**
-- CLI usage: `cli-usage.md`
-- Go API: `programmatic-usage.md`
-- Body tags: `document-body.md`
-- Tables: `document-table.md`
-- Styles: `document-style.md`
+- `dcd-cli` — CLI usage
+- `golang-programming` — Go library API
+- `dcd-documents` — Document template syntax
 
 **Version Info:**
 - Current: v0.2.0
@@ -669,3 +667,9 @@ Function: `normalizePropertyKey()` in `parse/parse.go` and `render/style.go`
 **Version:** v0.2.0
 **Last Updated:** Session complete
 **Status:** Production ready
+
+## See Also
+
+- `dcd-cli` — CLI usage and options
+- `dcd-documents` — Document template syntax reference
+- `golang-programming` — Go library API

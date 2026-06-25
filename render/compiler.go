@@ -131,7 +131,7 @@ func (c *Compiler) renderSection(sec parse.Section) error {
 	}
 
 	body := c.expandLoops(sec.Body)
-	body = resolveBuiltins(body)
+	body = c.resolveSectionBuiltins(body)
 	body = c.applyFormats(body, sec.Props["formats"])
 	body = c.ds.Resolve(body)
 	body = resolveRowStyles(body)  // Resolve style={{var}} after variable resolution
@@ -159,7 +159,8 @@ func (c *Compiler) validateSectionProps(sec parse.Section) error {
 	}
 
 	if !hasVar && !hasKeys {
-		return fmt.Errorf("keys required when var is absent")
+		// No var/keys — variables pass through as literals (e.g. {{title}} resolved by resolveBuiltins)
+		return nil
 	}
 
 	if fmts := sec.Props["formats"]; fmts != "" {
@@ -193,10 +194,15 @@ func (c *Compiler) applyFormats(body, formats string) string {
 	return varRe.ReplaceAllStringFunc(body, func(match string) string {
 		path := match[2 : len(match)-2]
 		path = strings.TrimSpace(path)
-		// Extract the last component as the key
 		parts := strings.Split(path, ".")
 		key := parts[len(parts)-1]
 		fmtStr, ok := fmtMap[key]
+		// For dotted format keys (e.g. items.date_field), match array paths
+		// like items.0.date_field by stripping the index.
+		if !ok && len(parts) >= 3 {
+			sourceField := parts[0] + "." + parts[len(parts)-1]
+			fmtStr, ok = fmtMap[sourceField]
+		}
 		if !ok {
 			return match
 		}
@@ -211,6 +217,18 @@ func resolveBuiltins(s string) string {
 	now := time.Now()
 	date := now.Format("2006-01-02")
 	s = strings.ReplaceAll(s, "{{date}}", date)
+	return s
+}
+
+func (c *Compiler) resolveSectionBuiltins(s string) string {
+	s = resolveBuiltins(s)
+	if strings.Contains(s, "{{title}}") {
+		if p := c.collectSection("title"); p != nil {
+			if t := p["title"]; t != "" {
+				s = strings.ReplaceAll(s, "{{title}}", t)
+			}
+		}
+	}
 	return s
 }
 

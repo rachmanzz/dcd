@@ -1,6 +1,6 @@
 # DCD — Document Compilation Definition
 
-**DCD** is a specification and tool for compiling `.dcd` files into Microsoft Word (`.docx`) and PDF documents. It uses a simple INI-style format with sections and HTML-like template tags.
+**DCD** (*Document Compilation Description*) is a **DSL (Domain-Specific Language)** and compiler for converting `.dcd` template files into Microsoft Word (`.docx`) and PDF documents. It uses a simple INI-style section format with HTML-like template tags and JSON data binding.
 
 ## Install
 
@@ -44,7 +44,7 @@ dcd --data report.json report.dcd report.docx
 | `[section:next-page N]`              | Section break + page break       |
 | `[style]`                            | Page layout configuration        |
 | `[style:heading-N]`                  | Heading 1-6 global style         |
-| `[table-style name]`                 | Named table style                |
+| `[style:table name]`                 | Named table style                |
 | `[header]` / `[footer]`              | Header and footer                |
 
 ### Section Properties
@@ -129,7 +129,7 @@ unit=inch
 orientation=portrait
 font-family="Times New Roman"
 font-size=12
-font-color=#000000
+color=#000000
 line-height=1.5
 m=1
 ```
@@ -149,18 +149,12 @@ m=1
 
 ## Skills
 
-Detailed specifications for each feature are available in [`.agents/skills/`](.agents/skills/):
+Detailed references are available in [`.agents/skills/`](.agents/skills/):
 
-- [document-style.md](.agents/skills/document-style.md)
-- [document-body.md](.agents/skills/document-body.md)
-- [document-heading.md](.agents/skills/document-heading.md)
-- [document-table.md](.agents/skills/document-table.md)
-- [document-image.md](.agents/skills/document-image.md)
-- [document-list.md](.agents/skills/document-list.md)
-- [document-loop.md](.agents/skills/document-loop.md)
-- [document-link.md](.agents/skills/document-link.md)
-- [document-break.md](.agents/skills/document-break.md)
-- [header-footer.md](.agents/skills/header-footer.md)
+- [dcd-documents](.agents/skills/dcd-documents/) — DCD DSL reference (sections, tags, styles, etc.)
+- [dcd-cli](.agents/skills/dcd-cli/) — CLI usage and options
+- [golang-programming](.agents/skills/golang-programming/) — Go library API
+- [dcd-guide](.agents/skills/dcd-guide/) — Project overview and development guide
 
 ## Library
 

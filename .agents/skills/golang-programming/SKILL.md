@@ -1,3 +1,8 @@
+---
+name: golang-programming
+description: Complete guide to using DCD as a Go library — installation, API reference, data types, renderer interface, and advanced patterns
+---
+
 # Programmatic Usage
 
 Complete guide to using DCD as a Go library in your applications.
@@ -27,7 +32,7 @@ package main
 
 import (
     "log"
-    
+
     "github.com/rachmanzz/dcd/data"
     "github.com/rachmanzz/dcd/parse"
     "github.com/rachmanzz/dcd/render"
@@ -39,22 +44,22 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // Create data set
     ds := data.NewDataSet(map[string]any{
         "title": "My Report",
         "author": "John Doe",
     })
-    
+
     // Create renderer
     renderer := render.NewDocxRenderer()
-    
+
     // Compile and generate
     compiler := render.New(doc, ds, renderer)
     if err := compiler.Run("output.docx"); err != nil {
         log.Fatal(err)
     }
-    
+
     log.Println("Generated: output.docx")
 }
 ```
@@ -72,23 +77,23 @@ import (
 
 func main() {
     r := render.NewDocxRenderer()
-    
+
     // Set page style
     r.SetPageStyle(map[string]string{
         "layout": "A4",
         "m":      "25.4", // margins in mm
     })
-    
+
     // Set default text style
     r.SetDefaultStyle(map[string]string{
         "font-family": "Arial",
         "font-size":   "12",
         "color":       "#000000",
     })
-    
+
     // Add heading
     r.AddHeading("My Report", 1, nil)
-    
+
     // Add paragraph
     r.AddParagraph([]render.TextRun{
         {Text: "This is "},
@@ -97,7 +102,7 @@ func main() {
         {Text: "italic", Italic: true},
         {Text: " text."},
     })
-    
+
     // Save
     if err := r.Save("output.docx"); err != nil {
         log.Fatal(err)
@@ -178,7 +183,7 @@ type Renderer interface {
     SetHeader(props map[string]string) error
     SetFooter(props map[string]string) error
     SetMetadata(props map[string]string) error
-    
+
     AddHeading(text string, level int, attrs map[string]string) error
     AddParagraph(runs []TextRun) error
     AddWrappedParagraph(text string, flags string) error
@@ -189,7 +194,7 @@ type Renderer interface {
     AddHyperlink(text, url string, attrs map[string]string) error
     AddList(items []ListItem, ordered bool) error
     AddTable(rows []TableRow, attrs map[string]string) error
-    
+
     Save(path string) error
 }
 ```
@@ -298,7 +303,7 @@ package main
 import (
     "log"
     "time"
-    
+
     "github.com/rachmanzz/dcd/render"
 )
 
@@ -319,20 +324,20 @@ type InvoiceItem struct {
 
 func GenerateInvoice(inv Invoice, outputPath string) error {
     r := render.NewDocxRenderer()
-    
+
     // Page setup
     r.SetPageStyle(map[string]string{
         "layout": "A4",
         "m":      "20",
     })
-    
+
     // Header style
     r.SetHeadingStyle(1, map[string]string{
         "font-size": "24",
         "color":     "#1F3864",
         "bold":      "true",
     })
-    
+
     // Table header style
     r.SetTableStyle("header", map[string]string{
         "bg":          "#4472C4",
@@ -340,10 +345,10 @@ func GenerateInvoice(inv Invoice, outputPath string) error {
         "font-weight": "bold",
         "align":       "center",
     })
-    
+
     // Header
     r.AddHeading("INVOICE", 1, nil)
-    
+
     // Invoice details
     r.AddParagraph([]render.TextRun{
         {Text: "Invoice #: ", Bold: true},
@@ -357,9 +362,9 @@ func GenerateInvoice(inv Invoice, outputPath string) error {
         {Text: "Customer: ", Bold: true},
         {Text: inv.Customer},
     })
-    
+
     r.AddLineBreak()
-    
+
     // Items table
     rows := []render.TableRow{
         {
@@ -372,8 +377,7 @@ func GenerateInvoice(inv Invoice, outputPath string) error {
             Props: map[string]string{"style": "header"},
         },
     }
-    
-    // Add items
+
     for _, item := range inv.Items {
         rows = append(rows, render.TableRow{
             Cells: []render.TableCell{
@@ -384,8 +388,7 @@ func GenerateInvoice(inv Invoice, outputPath string) error {
             },
         })
     }
-    
-    // Total row
+
     rows = append(rows, render.TableRow{
         Cells: []render.TableCell{
             {Runs: []render.TextRun{{Text: ""}}},
@@ -394,9 +397,9 @@ func GenerateInvoice(inv Invoice, outputPath string) error {
             {Runs: []render.TextRun{{Text: fmt.Sprintf("$%.2f", inv.Total), Bold: true}}, Attrs: map[string]string{"align": "right"}},
         },
     })
-    
+
     r.AddTable(rows, map[string]string{"border": "1"})
-    
+
     return r.Save(outputPath)
 }
 
@@ -411,11 +414,11 @@ func main() {
         },
         Total: 2000,
     }
-    
+
     if err := GenerateInvoice(invoice, "invoice.docx"); err != nil {
         log.Fatal(err)
     }
-    
+
     log.Println("Invoice generated: invoice.docx")
 }
 ```
@@ -429,14 +432,14 @@ import (
     "encoding/json"
     "log"
     "os"
-    
+
     "github.com/rachmanzz/dcd/data"
     "github.com/rachmanzz/dcd/parse"
     "github.com/rachmanzz/dcd/render"
 )
 
 type Report struct {
-    Title    string   `json:"title"`
+    Title    string    `json:"title"`
     Author   string   `json:"author"`
     Date     string   `json:"date"`
     Sections []Section `json:"sections"`
@@ -448,32 +451,26 @@ type Section struct {
 }
 
 func GenerateReport(templatePath, dataPath, outputPath string) error {
-    // Parse template
     doc, err := parse.Parse(templatePath)
     if err != nil {
         return err
     }
-    
-    // Load data
+
     dataFile, err := os.ReadFile(dataPath)
     if err != nil {
         return err
     }
-    
+
     var report Report
     if err := json.Unmarshal(dataFile, &report); err != nil {
         return err
     }
-    
-    // Create dataset
+
     ds := data.NewDataSet(map[string]any{
         "report": report,
     })
-    
-    // Create renderer
+
     renderer := render.NewDocxRenderer()
-    
-    // Compile and generate
     compiler := render.New(doc, ds, renderer)
     return compiler.Run(outputPath)
 }
@@ -486,7 +483,7 @@ func main() {
     ); err != nil {
         log.Fatal(err)
     }
-    
+
     log.Println("Report generated successfully")
 }
 ```
@@ -498,20 +495,18 @@ package main
 
 import (
     "log"
-    
+
     "github.com/rachmanzz/dcd/data"
     "github.com/rachmanzz/dcd/parse"
     "github.com/rachmanzz/dcd/render"
 )
 
 func GenerateDocument(templatePath string, dataset *data.DataSet, outputPath string, format string) error {
-    // Parse template
     doc, err := parse.Parse(templatePath)
     if err != nil {
         return err
     }
-    
-    // Choose renderer
+
     var renderer render.Renderer
     switch format {
     case "pdf":
@@ -521,8 +516,7 @@ func GenerateDocument(templatePath string, dataset *data.DataSet, outputPath str
     default:
         return fmt.Errorf("unsupported format: %s", format)
     }
-    
-    // Compile and generate
+
     compiler := render.New(doc, dataset, renderer)
     return compiler.Run(outputPath)
 }
@@ -532,17 +526,15 @@ func main() {
         "title":  "My Document",
         "author": "John Doe",
     })
-    
-    // Generate DOCX
+
     if err := GenerateDocument("template.dcd", ds, "output.docx", "docx"); err != nil {
         log.Fatal(err)
     }
-    
-    // Generate PDF
+
     if err := GenerateDocument("template.dcd", ds, "output.pdf", "pdf"); err != nil {
         log.Fatal(err)
     }
-    
+
     log.Println("Documents generated successfully")
 }
 ```
@@ -565,17 +557,17 @@ func (l *JSONLoader) Load() (map[string]any, error) {
     if err != nil {
         return nil, err
     }
-    
+
     var result map[string]any
     if err := json.Unmarshal(data, &result); err != nil {
         return nil, err
     }
-    
+
     return result, nil
 }
 
 type DatabaseLoader struct {
-    DB *sql.DB
+    DB    *sql.DB
     Query string
 }
 
@@ -585,10 +577,10 @@ func (l *DatabaseLoader) Load() (map[string]any, error) {
         return nil, err
     }
     defer rows.Close()
-    
+
     var items []map[string]any
     // ... scan rows ...
-    
+
     return map[string]any{"items": items}, nil
 }
 ```
@@ -634,7 +626,7 @@ func main() {
         AddSection("Introduction", "This is the introduction.").
         AddSection("Conclusion", "This is the conclusion.").
         Save("report.docx")
-    
+
     if err != nil {
         log.Fatal(err)
     }
@@ -668,7 +660,7 @@ func (r *TemplateRegistry) Generate(name string, ds *data.DataSet, outputPath st
     if !ok {
         return fmt.Errorf("template not found: %s", name)
     }
-    
+
     renderer := render.NewDocxRenderer()
     compiler := render.New(doc, ds, renderer)
     return compiler.Run(outputPath)
@@ -679,9 +671,9 @@ func main() {
     registry := NewTemplateRegistry()
     registry.Register("invoice", "templates/invoice.dcd")
     registry.Register("report", "templates/report.dcd")
-    
+
     ds := data.NewDataSet(map[string]any{"number": "INV-001"})
-    
+
     if err := registry.Generate("invoice", ds, "invoice.docx"); err != nil {
         log.Fatal(err)
     }
@@ -694,31 +686,27 @@ func main() {
 
 ```go
 func GenerateDocument(templatePath, dataPath, outputPath string) error {
-    // Parse template
     doc, err := parse.Parse(templatePath)
     if err != nil {
         return fmt.Errorf("failed to parse template: %w", err)
     }
-    
-    // Load data
+
     data, err := loadData(dataPath)
     if err != nil {
         return fmt.Errorf("failed to load data: %w", err)
     }
-    
-    // Generate
+
     ds := data.NewDataSet(data)
     renderer := render.NewDocxRenderer()
     compiler := render.New(doc, ds, renderer)
-    
+
     if err := compiler.Run(outputPath); err != nil {
         return fmt.Errorf("failed to generate document: %w", err)
     }
-    
+
     return nil
 }
 
-// Usage with error handling
 func main() {
     if err := GenerateDocument("template.dcd", "data.json", "output.docx"); err != nil {
         log.Printf("Error: %v", err)
@@ -761,29 +749,28 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 func GenerateMultiple(templates []Template, output string) error {
     var wg sync.WaitGroup
     errChan := make(chan error, len(templates))
-    
+
     for i, tmpl := range templates {
         wg.Add(1)
         go func(index int, t Template) {
             defer wg.Done()
-            
+
             outputPath := fmt.Sprintf("%s/doc-%d.docx", output, index)
             if err := generateOne(t, outputPath); err != nil {
                 errChan <- err
             }
         }(i, tmpl)
     }
-    
+
     wg.Wait()
     close(errChan)
-    
-    // Check for errors
+
     for err := range errChan {
         if err != nil {
             return err
         }
     }
-    
+
     return nil
 }
 ```
@@ -797,7 +784,7 @@ package myapp
 
 import (
     "testing"
-    
+
     "github.com/rachmanzz/dcd/data"
     "github.com/rachmanzz/dcd/render"
 )
@@ -806,20 +793,17 @@ func TestDocumentGeneration(t *testing.T) {
     ds := data.NewDataSet(map[string]any{
         "title": "Test Report",
     })
-    
+
     r := render.NewDocxRenderer()
-    // ... add content ...
-    
+
     if err := r.Save("/tmp/test.docx"); err != nil {
         t.Fatalf("Failed to generate document: %v", err)
     }
-    
-    // Verify file exists
+
     if _, err := os.Stat("/tmp/test.docx"); os.IsNotExist(err) {
         t.Error("Output file was not created")
     }
-    
-    // Clean up
+
     os.Remove("/tmp/test.docx")
 }
 ```
@@ -828,12 +812,10 @@ func TestDocumentGeneration(t *testing.T) {
 
 ```go
 func TestEndToEnd(t *testing.T) {
-    // Create temp files
     templatePath := "/tmp/test-template.dcd"
     dataPath := "/tmp/test-data.json"
     outputPath := "/tmp/test-output.docx"
-    
-    // Write template
+
     template := `[section 0]
 var=data
 keys=title
@@ -841,23 +823,19 @@ keys=title
 --- BODY ---
 <h1>{{data.title}}</h1>`
     os.WriteFile(templatePath, []byte(template), 0644)
-    
-    // Write data
+
     data := `{"data": {"title": "Test Document"}}`
     os.WriteFile(dataPath, []byte(data), 0644)
-    
-    // Generate
+
     err := GenerateDocument(templatePath, dataPath, outputPath)
     if err != nil {
         t.Fatalf("Failed: %v", err)
     }
-    
-    // Verify
+
     if _, err := os.Stat(outputPath); os.IsNotExist(err) {
         t.Error("Output not created")
     }
-    
-    // Clean up
+
     os.Remove(templatePath)
     os.Remove(dataPath)
     os.Remove(outputPath)
@@ -866,9 +844,6 @@ keys=title
 
 ## See Also
 
-- `cli-usage.md` - Command-line interface guide
-- `document-body.md` - Body content and tags
-- `document-table.md` - Table formatting
-- `document-style.md` - Style configuration
-- `../docs/library.md` - API reference
-- `../docs/format.md` - Document format specification
+- `dcd-cli` — CLI usage and options
+- `dcd-documents` — Document template syntax reference
+- `dcd-guide` — Project overview and patterns
