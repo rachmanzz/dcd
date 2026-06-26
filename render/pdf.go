@@ -232,7 +232,7 @@ func (p *PdfRenderer) AddParagraph(runs []TextRun) error {
 
 	allPlain := true
 	for _, run := range runs {
-		if run.Bold || run.Italic || run.Underline || run.Code || run.Link != "" {
+		if run.Bold || run.Italic || run.Underline || run.Code || run.Tab || run.Link != "" {
 			allPlain = false
 			break
 		}
@@ -251,6 +251,10 @@ func (p *PdfRenderer) AddParagraph(runs []TextRun) error {
 		r.Col(12, func(c *template.ColBuilder) {
 			c.RichText(func(rt *template.RichTextBuilder) {
 				for _, run := range runs {
+					if run.Tab {
+						rt.Span("\t")
+						continue
+					}
 					var opts []template.TextOption
 					opts = append(opts, defaultOpts...)
 				if run.Code {

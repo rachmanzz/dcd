@@ -6,6 +6,7 @@ type TextRun struct {
 	Italic        bool
 	Underline     bool
 	Code          bool
+	Tab           bool
 	Link          string
 	LinkAttrs     map[string]string
 }

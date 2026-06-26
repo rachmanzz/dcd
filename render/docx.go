@@ -221,6 +221,12 @@ func (d *DocxRenderer) AddParagraph(runs []TextRun) error {
 	}
 
 	for _, r := range runs {
+		if r.Tab {
+			p.AddText("")
+			ctRun := p.GetCT().Children[len(p.GetCT().Children)-1].Run
+			ctRun.Children = []ctypes.RunChild{{Tab: &ctypes.Empty{}}}
+			continue
+		}
 		run := p.AddText(r.Text)
 		ctRun := p.GetCT().Children[len(p.GetCT().Children)-1].Run
 

@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -19,6 +20,7 @@ var (
 	codeRe      = regexp.MustCompile(`<code>(.*?)</code>`)
 	setRe       = regexp.MustCompile(`<set:([^>]+)>(.*?)</set(?::[^>]+)?>`)
 	brRe        = regexp.MustCompile(`^<br>$`)
+	tabRe       = regexp.MustCompile(`^<tab(\s+size=(\d+))?\s*/?>$`)
 	hrRe        = regexp.MustCompile(`^<hr(\s+[^>]*)?>$`)
 	pageBreakRe = regexp.MustCompile(`^<pb>$|^<page-break>$`)
 	nestedListRe = regexp.MustCompile(`(?s)<(ul|ol)(?:\s+[^>]*)?>(.*?)</(?:ul|ol)>`)
@@ -418,6 +420,16 @@ func inlineToRuns(content string) []TextRun {
 		switch part.tag {
 		case "a":
 			runs = append(runs, TextRun{Text: part.text, Link: part.url, LinkAttrs: part.linkAttrs})
+		case "tab":
+			n := 1
+			if part.text != "" {
+				if v, err := strconv.Atoi(part.text); err == nil && v > 0 {
+					n = v
+				}
+			}
+			for i := 0; i < n; i++ {
+				runs = append(runs, TextRun{Tab: true})
+			}
 		default:
 			// Check if part.tag contains "|" (set:flags format)
 			if strings.Contains(part.tag, "|") {
@@ -500,7 +512,23 @@ func splitInline(s string) []inlinePart {
 		check("i", iRe)
 		check("u", uRe)
 		check("code", codeRe)
-		
+
+		checkTab := func() {
+			loc := tabRe.FindStringSubmatchIndex(s[pos:])
+			if len(loc) < 6 || loc[0] < 0 {
+				return
+			}
+			idx := loc[0]
+			size := "1"
+			if loc[4] >= 0 {
+				size = s[pos+loc[4] : pos+loc[5]]
+			}
+			if best == nil || idx < best.idx {
+				best = &match{tag: "tab", text: size, skip: loc[1] - loc[0], idx: idx}
+			}
+		}
+		checkTab()
+
 		// Check for <set:flags> tag
 		checkSet := func() {
 			loc := setRe.FindStringSubmatchIndex(s[pos:])
