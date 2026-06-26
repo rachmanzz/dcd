@@ -28,7 +28,7 @@ type ListItem struct {
 
 type Renderer interface {
 	AddHeading(text string, level int, attrs map[string]string) error
-	AddParagraph(runs []TextRun) error
+	AddParagraph(runs []TextRun, attrs map[string]string) error
 	AddLineBreak() error
 	AddHorizontalRule(attrs map[string]string) error
 	AddPageBreak() error

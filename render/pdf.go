@@ -219,7 +219,22 @@ func (p *PdfRenderer) defaultTextOpts() []template.TextOption {
 	return opts
 }
 
-func (p *PdfRenderer) AddParagraph(runs []TextRun) error {
+func (p *PdfRenderer) alignOpts(attrs map[string]string) []template.TextOption {
+	if attrs == nil {
+		return nil
+	}
+	switch attrs["align"] {
+	case "center":
+		return []template.TextOption{template.AlignCenter()}
+	case "right":
+		return []template.TextOption{template.AlignRight()}
+	case "justify":
+		return []template.TextOption{func(s *document.Style) { s.TextAlign = document.AlignJustify }}
+	}
+	return nil
+}
+
+func (p *PdfRenderer) AddParagraph(runs []TextRun, attrs map[string]string) error {
 	if err := p.init(); err != nil {
 		return err
 	}
@@ -229,6 +244,8 @@ func (p *PdfRenderer) AddParagraph(runs []TextRun) error {
 
 	page := p.getPage()
 	defaultOpts := p.defaultTextOpts()
+
+	alignOpts := p.alignOpts(attrs)
 
 	allPlain := true
 	for _, run := range runs {
@@ -240,7 +257,8 @@ func (p *PdfRenderer) AddParagraph(runs []TextRun) error {
 	if allPlain {
 		page.AutoRow(func(r *template.RowBuilder) {
 			r.Col(12, func(c *template.ColBuilder) {
-				c.Text(runs[0].Text, defaultOpts...)
+				opts := append(defaultOpts, alignOpts...)
+				c.Text(runs[0].Text, opts...)
 				c.Spacer(document.Mm(2))
 			})
 		})
@@ -257,6 +275,7 @@ func (p *PdfRenderer) AddParagraph(runs []TextRun) error {
 					}
 					var opts []template.TextOption
 					opts = append(opts, defaultOpts...)
+					opts = append(opts, alignOpts...)
 				if run.Code {
 					opts = append(opts, template.FontFamily("Courier New"))
 				}
@@ -531,6 +550,10 @@ func (p *PdfRenderer) AddWrappedParagraph(text string, flags string) error {
 		switch f {
 		case "c":
 			opts = append(opts, template.AlignCenter())
+		case "r":
+			opts = append(opts, template.AlignRight())
+		case "j":
+			opts = append(opts, func(s *document.Style) { s.TextAlign = document.AlignJustify })
 		case "b":
 			opts = append(opts, template.Bold())
 		case "i":

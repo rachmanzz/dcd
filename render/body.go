@@ -9,7 +9,7 @@ import (
 
 var (
 	hRe         = regexp.MustCompile(`^<h(\d)(\s+[^>]*)?>(.+)</h(\d)>$`)
-	pRe         = regexp.MustCompile(`^<p>(.*)</p>$`)
+	pRe         = regexp.MustCompile(`^<p(\s+[^>]*)?>(.*)</p>$`)
 	wRe         = regexp.MustCompile(`^<w:([^>]+)>(.*)</w:([^>]+)>$`)
 	imgRe       = regexp.MustCompile(`^<img=(\S+)\s*(.*?)>$`)
 	linkRe      = regexp.MustCompile(`<a=(\S+?)(\s+[^>]*)?>([^<]+)</a>`)
@@ -379,10 +379,10 @@ func (c *Compiler) parseLine(line string) error {
 			return c.r.AddHeading(m[3], atoi(m[1]), attrs)
 		}
 
-	case strings.HasPrefix(line, "<p>"):
+	case strings.HasPrefix(line, "<p"):
 		m := pRe.FindStringSubmatch(line)
-		if len(m) == 2 {
-			return c.renderParagraph(m[1])
+		if len(m) == 3 {
+			return c.renderParagraph(m[2], parseAttrs(m[1]))
 		}
 
 	case strings.HasPrefix(line, "<w:"):
@@ -409,8 +409,8 @@ func (c *Compiler) parseLine(line string) error {
 	return nil
 }
 
-func (c *Compiler) renderParagraph(content string) error {
-	return c.r.AddParagraph(inlineToRuns(content))
+func (c *Compiler) renderParagraph(content string, attrs map[string]string) error {
+	return c.r.AddParagraph(inlineToRuns(content), attrs)
 }
 
 func inlineToRuns(content string) []TextRun {

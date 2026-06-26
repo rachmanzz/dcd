@@ -197,7 +197,7 @@ func (d *DocxRenderer) AddHeading(text string, level int, attrs map[string]strin
 	return nil
 }
 
-func (d *DocxRenderer) AddParagraph(runs []TextRun) error {
+func (d *DocxRenderer) AddParagraph(runs []TextRun, attrs map[string]string) error {
 	if d.root == nil {
 		if err := d.init(); err != nil {
 			return err
@@ -205,12 +205,28 @@ func (d *DocxRenderer) AddParagraph(runs []TextRun) error {
 	}
 	p := d.root.AddEmptyParagraph()
 
-	if d.defaultStyle != nil {
-		pPr := p.GetCT().Property
-		if pPr == nil {
-			pPr = &ctypes.ParagraphProp{}
-			p.GetCT().Property = pPr
+	pPr := p.GetCT().Property
+	if pPr == nil {
+		pPr = &ctypes.ParagraphProp{}
+		p.GetCT().Property = pPr
+	}
+
+	if attrs != nil {
+		if s := attrs["align"]; s != "" {
+			switch s {
+			case "center":
+				pPr.Justification = ctypes.NewGenSingleStrVal(stypes.JustificationCenter)
+			case "right":
+				pPr.Justification = ctypes.NewGenSingleStrVal(stypes.JustificationRight)
+			case "justify":
+				pPr.Justification = ctypes.NewGenSingleStrVal(stypes.JustificationBoth)
+			default:
+				pPr.Justification = ctypes.NewGenSingleStrVal(stypes.JustificationLeft)
+			}
 		}
+	}
+
+	if d.defaultStyle != nil {
 		if lh := d.defaultStyle["line-height"]; lh != "" {
 			if pPr.Spacing == nil {
 				pPr.Spacing = &ctypes.Spacing{}
@@ -694,6 +710,10 @@ func (d *DocxRenderer) AddWrappedParagraph(text string, flags string) error {
 		switch f {
 		case "c":
 			p.Justification(stypes.JustificationCenter)
+		case "r":
+			p.Justification(stypes.JustificationRight)
+		case "j":
+			p.Justification(stypes.JustificationBoth)
 		case "b":
 			if len(p.GetCT().Children) > 0 {
 				if run := p.GetCT().Children[0].Run; run != nil {
