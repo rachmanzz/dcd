@@ -832,11 +832,6 @@ func (d *DocxRenderer) SetFooter(props map[string]string) error {
 		return nil
 	}
 
-	// resolve footer vars
-	for i, part := range parts {
-		parts[i].text = resolveHeaderVar(part.text)
-	}
-
 	d.footerRID = fmt.Sprintf("rId%d", d.root.Document.IncRelationID())
 	xml := d.buildFtrXML(parts, cfg)
 
@@ -874,9 +869,16 @@ func (d *DocxRenderer) SetFooter(props map[string]string) error {
 	return nil
 }
 
+type hdrSegment struct {
+	isField bool
+	isTab   bool
+	content string
+}
+
 type hdrPart struct {
-	text  string
-	align string
+	segments []hdrSegment
+	align    string
+	tabStops []int
 }
 
 type hdrFooterCfg struct {
@@ -889,18 +891,85 @@ type hdrFooterCfg struct {
 	mirror     bool
 }
 
+func splitComma(s string) []string {
+	var parts []string
+	var cur strings.Builder
+	for i := 0; i < len(s); i++ {
+		if s[i] == '\\' && i+1 < len(s) && s[i+1] == ',' {
+			cur.WriteByte(',')
+			i++
+		} else if s[i] == ',' {
+			parts = append(parts, strings.TrimSpace(cur.String()))
+			cur.Reset()
+		} else {
+			cur.WriteByte(s[i])
+		}
+	}
+	if v := strings.TrimSpace(cur.String()); v != "" {
+		parts = append(parts, v)
+	}
+	return parts
+}
+
+func (d *DocxRenderer) hdrTabPositions(n int) []int {
+	pw := d.pageWidthMm
+	if pw == 0 {
+		pw = 210.0
+	}
+	pwTwip := int(pw * 56.7)
+	l, r := 0, 0
+	if d.root != nil && d.root.Document.Body.SectPr != nil && d.root.Document.Body.SectPr.PageMargin != nil {
+		if d.root.Document.Body.SectPr.PageMargin.Left != nil {
+			l = *d.root.Document.Body.SectPr.PageMargin.Left
+		}
+		if d.root.Document.Body.SectPr.PageMargin.Right != nil {
+			r = *d.root.Document.Body.SectPr.PageMargin.Right
+		}
+	}
+	usable := pwTwip - l - r
+	if usable < 1 {
+		usable = pwTwip
+	}
+	switch n {
+	case 2:
+		return []int{usable}
+	case 3:
+		return []int{usable / 2, usable}
+	default:
+		return nil
+	}
+}
+
 func (d *DocxRenderer) collectHeaderFooterParts(props map[string]string) ([]hdrPart, hdrFooterCfg) {
 	now := time.Now()
 	var parts []hdrPart
-	for _, align := range []string{"left", "center", "right"} {
-		if t, ok := props[align]; ok && t != "" {
-			t = strings.ReplaceAll(t, "{{date}}", now.Format("2006-01-02"))
-			t = strings.ReplaceAll(t, "{{page}}", `<w:fldSimple w:instr=" PAGE "/><w:r><w:t xml:space="preserve"> / </w:t></w:r><w:fldSimple w:instr=" NUMPAGES "/>`)
-			t = strings.ReplaceAll(t, "{{title}}", d.docTitle)
-			t = strings.ReplaceAll(t, "{{total}}", `<w:fldSimple w:instr=" NUMPAGES "/>`)
-			parts = append(parts, hdrPart{text: t, align: align})
+
+	if jb, ok := props["justify_between"]; ok && jb != "" {
+		cols := splitComma(jb)
+		if len(cols) >= 2 && len(cols) <= 3 {
+			var segs []hdrSegment
+			for i, col := range cols {
+				if i > 0 {
+					segs = append(segs, hdrSegment{isTab: true})
+				}
+				segs = append(segs, d.parseHdrText(col, now)...)
+			}
+			parts = append(parts, hdrPart{
+				segments: segs,
+				tabStops: d.hdrTabPositions(len(cols)),
+			})
+		}
+	} else {
+		for _, align := range []string{"left", "center", "right"} {
+			if t, ok := props[align]; ok && t != "" {
+				parts = append(parts, hdrPart{
+					segments: d.parseHdrText(t, now),
+					align:    align,
+				})
+			}
 		}
 	}
+
 	cfg := hdrFooterCfg{
 		fontFamily: props["font-family"],
 		fontSize:   props["font-size"],
@@ -913,11 +982,46 @@ func (d *DocxRenderer) collectHeaderFooterParts(props map[string]string) ([]hdrP
 	return parts, cfg
 }
 
-func resolveHeaderVar(s string) string {
-	now := time.Now()
-	s = strings.ReplaceAll(s, "{{date}}", now.Format("2006-01-02"))
-	s = strings.ReplaceAll(s, "{{page}}", `<w:fldSimple w:instr=" PAGE "/><w:r><w:t xml:space="preserve"> / </w:t></w:r><w:fldSimple w:instr=" NUMPAGES "/>`)
-	s = strings.ReplaceAll(s, "{{total}}", `<w:fldSimple w:instr=" NUMPAGES "/>`)
+func (d *DocxRenderer) parseHdrText(t string, now time.Time) []hdrSegment {
+	var segs []hdrSegment
+	for {
+		start := strings.Index(t, "{{")
+		if start < 0 {
+			if t != "" {
+				segs = append(segs, hdrSegment{content: t})
+			}
+			break
+		}
+		if start > 0 {
+			segs = append(segs, hdrSegment{content: t[:start]})
+		}
+		end := strings.Index(t[start:], "}}")
+		if end < 0 {
+			segs = append(segs, hdrSegment{content: t})
+			break
+		}
+		end = start + end + 2
+		switch strings.TrimSpace(t[start+2 : end-2]) {
+		case "page":
+			segs = append(segs, hdrSegment{isField: true, content: " PAGE "})
+		case "total":
+			segs = append(segs, hdrSegment{isField: true, content: " NUMPAGES "})
+		case "date":
+			segs = append(segs, hdrSegment{content: now.Format("2006-01-02")})
+		case "title":
+			segs = append(segs, hdrSegment{content: d.docTitle})
+		default:
+			segs = append(segs, hdrSegment{content: t[start:end]})
+		}
+		t = t[end:]
+	}
+	return segs
+}
+
+func xmlEscape(s string) string {
+	s = strings.ReplaceAll(s, "&", "&amp;")
+	s = strings.ReplaceAll(s, "<", "&lt;")
+	s = strings.ReplaceAll(s, ">", "&gt;")
 	return s
 }
 
@@ -935,6 +1039,17 @@ func (d *DocxRenderer) buildHdrXML(parts []hdrPart, cfg hdrFooterCfg) string {
 		case "right":
 			sb.WriteString(`<w:jc w:val="right"/>`)
 		}
+		if len(part.tabStops) > 0 {
+			sb.WriteString(`<w:tabs>`)
+			for i, pos := range part.tabStops {
+				val := "right"
+				if len(part.tabStops) == 2 && i == 0 {
+					val = "center"
+				}
+				sb.WriteString(fmt.Sprintf(`<w:tab w:val="%s" w:pos="%d"/>`, val, pos))
+			}
+			sb.WriteString(`</w:tabs>`)
+		}
 		if hasBorder {
 			bdrPos := "bottom"
 			if cfg.border == "top" {
@@ -943,15 +1058,19 @@ func (d *DocxRenderer) buildHdrXML(parts []hdrPart, cfg hdrFooterCfg) string {
 			sb.WriteString(fmt.Sprintf(`<w:pBdr><w:%s w:val="single" w:color="auto" w:space="4"/></w:pBdr>`, bdrPos))
 		}
 		sb.WriteString(`</w:pPr>`)
-		if d.hasRunProps(cfg) {
-			sb.WriteString(`<w:r>`)
-			sb.WriteString(d.runPropsXML(cfg))
-			sb.WriteString(fmt.Sprintf(`<w:t>%s</w:t>`, part.text))
-			sb.WriteString(`</w:r>`)
-		} else {
-			sb.WriteString(`<w:r>`)
-			sb.WriteString(fmt.Sprintf(`<w:t>%s</w:t>`, part.text))
-			sb.WriteString(`</w:r>`)
+		for _, seg := range part.segments {
+			if seg.isTab {
+				sb.WriteString(`<w:r><w:tab/></w:r>`)
+			} else if seg.isField {
+				sb.WriteString(fmt.Sprintf(`<w:fldSimple w:instr="%s"/>`, seg.content))
+			} else {
+				sb.WriteString(`<w:r>`)
+				if d.hasRunProps(cfg) {
+					sb.WriteString(d.runPropsXML(cfg))
+				}
+				sb.WriteString(fmt.Sprintf(`<w:t xml:space="preserve">%s</w:t>`, xmlEscape(seg.content)))
+				sb.WriteString(`</w:r>`)
+			}
 		}
 		sb.WriteString(`</w:p>`)
 	}
@@ -973,6 +1092,17 @@ func (d *DocxRenderer) buildFtrXML(parts []hdrPart, cfg hdrFooterCfg) string {
 		case "right":
 			sb.WriteString(`<w:jc w:val="right"/>`)
 		}
+		if len(part.tabStops) > 0 {
+			sb.WriteString(`<w:tabs>`)
+			for i, pos := range part.tabStops {
+				val := "right"
+				if len(part.tabStops) == 2 && i == 0 {
+					val = "center"
+				}
+				sb.WriteString(fmt.Sprintf(`<w:tab w:val="%s" w:pos="%d"/>`, val, pos))
+			}
+			sb.WriteString(`</w:tabs>`)
+		}
 		if hasBorder {
 			bdrPos := "bottom"
 			if cfg.border == "top" {
@@ -981,15 +1111,19 @@ func (d *DocxRenderer) buildFtrXML(parts []hdrPart, cfg hdrFooterCfg) string {
 			sb.WriteString(fmt.Sprintf(`<w:pBdr><w:%s w:val="single" w:color="auto" w:space="4"/></w:pBdr>`, bdrPos))
 		}
 		sb.WriteString(`</w:pPr>`)
-		if d.hasRunProps(cfg) {
-			sb.WriteString(`<w:r>`)
-			sb.WriteString(d.runPropsXML(cfg))
-			sb.WriteString(fmt.Sprintf(`<w:t>%s</w:t>`, part.text))
-			sb.WriteString(`</w:r>`)
-		} else {
-			sb.WriteString(`<w:r>`)
-			sb.WriteString(fmt.Sprintf(`<w:t>%s</w:t>`, part.text))
-			sb.WriteString(`</w:r>`)
+		for _, seg := range part.segments {
+			if seg.isTab {
+				sb.WriteString(`<w:r><w:tab/></w:r>`)
+			} else if seg.isField {
+				sb.WriteString(fmt.Sprintf(`<w:fldSimple w:instr="%s"/>`, seg.content))
+			} else {
+				sb.WriteString(`<w:r>`)
+				if d.hasRunProps(cfg) {
+					sb.WriteString(d.runPropsXML(cfg))
+				}
+				sb.WriteString(fmt.Sprintf(`<w:t xml:space="preserve">%s</w:t>`, xmlEscape(seg.content)))
+				sb.WriteString(`</w:r>`)
+			}
 		}
 		sb.WriteString(`</w:p>`)
 	}
