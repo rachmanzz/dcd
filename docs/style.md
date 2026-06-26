@@ -110,11 +110,26 @@ border=top
 | `left` | Left-aligned content |
 | `center` | Center-aligned content |
 | `right` | Right-aligned content |
+| `justify_between` | 2 or 3 comma-separated items spread evenly via tab stops. Use `\,` for literal comma |
 | `font-family` | Font name |
 | `font-size` | Font size in points |
 | `color` | Hex color |
 | `border` | `top` or `bottom` line |
 | `margin` | Header/footer margin |
+
+### justify_between Example
+
+```ini
+[header]
+justify_between={{title}}, {{page}} / {{total}}
+font-size=9
+color=#666666
+border=bottom
+
+[footer]
+justify_between=Dept. A\, B\, and C, {{date}}, Page {{page}}
+border=top
+```
 
 ## Property Resolution Order
 

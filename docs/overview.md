@@ -85,8 +85,8 @@ formats=[date_field:dd-MM-yyyy]
 
 ### Document Metadata
 - Title, subject, author: `[title]` section
-- Built-in variables: `{{title}}`, `{{date}}`, `{{page}}`
-- Header/footer support
+- Built-in variables: `{{title}}`, `{{date}}`, `{{page}}`, `{{total}}`
+- Header/footer support with `left`, `center`, `right`, or `justify_between`
 
 ## Breaking Changes (v0.2.0)
 

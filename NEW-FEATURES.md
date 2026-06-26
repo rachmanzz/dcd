@@ -321,6 +321,45 @@ left={{title}}
 
 ---
 
+---
+
+## 9. Header/Footer `justify_between` (v0.2.1)
+
+Evenly-spaced columns using OOXML tab stops.
+
+### Syntax
+
+2 or 3 comma-separated items. Use `\,` for literal comma.
+
+```ini
+[header]
+justify_between={{title}}, {{page}} / {{total}}
+
+[footer]
+justify_between=Dept. A\, B\, and C, {{date}}, Page {{page}}
+```
+
+### Behavior
+
+| Items | Tab Stops |
+|---|---|
+| 2 | Left + right |
+| 3 | Left + center + right |
+
+Tab positions auto-calculated from page width and margins.
+
+### Props Support
+
+`font-family`, `font-size`, `color`, `border`, `margin`, `first-page` all work with `justify_between`.
+
+### Related Fixes
+
+- `{{page}}` now renders only the PAGE field (not combined with NUMPAGES)
+- XML escaping for `{{title}}` and all text content
+- Segment-based OOXML generation (proper sibling elements, not nested in `<w:t>`)
+
+---
+
 ## Summary of Files Changed
 
 ### Code (5 files)

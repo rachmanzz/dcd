@@ -274,3 +274,43 @@ New features tested:
 **NONE** - This is a breaking change. All old format files will fail or behave incorrectly.
 
 Old format is **not supported**. Users must migrate all `.dcd` files.
+
+---
+
+## v0.2.1 — Header/Footer Refactor & `justify_between`
+
+### New Feature: `justify_between`
+
+`[header]` and `[footer]` sections now support `justify_between` for evenly-spaced columns:
+
+```ini
+[header]
+justify_between={{title}}, {{page}} / {{total}}
+```
+
+- Accepts 2 (left + right) or 3 (left + center + right) comma-separated items
+- Use `\,` for literal comma in values
+- Tab positions auto-calculated from page width and margins
+- Works with all header/footer font and border properties
+
+### Bug Fixes
+
+1. **`{{page}}` now renders only the PAGE field** — previously it combined `PAGE / NUMPAGES`. Use `{{page}} / {{total}}` for both.
+2. **XML escaping for `{{title}}`** — document titles with `&`, `<`, `>` no longer produce malformed XML.
+3. **Proper OOXML structure** — field codes (`w:fldSimple`) are now proper sibling elements instead of being nested inside `<w:t>`.
+
+### Code Quality
+
+- Removed redundant `resolveHeaderVar()` function
+- Segment-based architecture for header/footer content generation
+
+### Files Changed
+
+- `render/docx.go` — Header/footer refactor, segment-based generation, `justify_between` support
+- `.agents/skills/dcd-documents/SKILL.md` — `justify_between` documentation
+- `docs/style.md` — Updated header/footer properties table
+- `docs/format.md` — Added `justify_between` reference
+- `docs/overview.md` — Added `justify_between` to features
+- `NEW-FEATURES.md` — Added `justify_between` feature section
+- `CHANGES.md` — This changelog entry
+- `PROJECT-STATUS.md` — Updated to v0.2.1

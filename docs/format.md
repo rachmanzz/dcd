@@ -73,6 +73,17 @@ Inside `<loop x from source>`, use `{{x.field}}`.
 | `{{total}}` | Total pages field (DOCX only) |
 | `{{title}}` | Document title from `[title]` |
 
+### Header/Footer
+
+`[header]` and `[footer]` sections support three content properties `left`, `center`, `right`, or the `justify_between` property for evenly-spaced columns:
+
+```ini
+[header]
+justify_between={{title}}, {{page}} / {{total}}
+```
+
+`justify_between` accepts 2 or 3 comma-separated items (use `\,` for literal comma). See `docs/style.md` for full property reference.
+
 ## Format Specifiers
 
 Format is defined as `[key:format]` in the `formats` property.
