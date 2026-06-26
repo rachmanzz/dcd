@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -219,19 +220,28 @@ func (p *PdfRenderer) defaultTextOpts() []template.TextOption {
 	return opts
 }
 
-func (p *PdfRenderer) alignOpts(attrs map[string]string) []template.TextOption {
+func (p *PdfRenderer) paraOpts(attrs map[string]string) []template.TextOption {
 	if attrs == nil {
 		return nil
 	}
+	var opts []template.TextOption
 	switch attrs["align"] {
 	case "center":
-		return []template.TextOption{template.AlignCenter()}
+		opts = append(opts, template.AlignCenter())
 	case "right":
-		return []template.TextOption{template.AlignRight()}
+		opts = append(opts, template.AlignRight())
 	case "justify":
-		return []template.TextOption{func(s *document.Style) { s.TextAlign = document.AlignJustify }}
+		opts = append(opts, func(s *document.Style) { s.TextAlign = document.AlignJustify })
 	}
-	return nil
+	if s := attrs["font-size"]; s != "" {
+		opts = append(opts, template.FontSize(atof(s)))
+	}
+	if s := attrs["font-color"]; s != "" {
+		if clr := parseHexColor(s); clr != nil {
+			opts = append(opts, template.TextColor(*clr))
+		}
+	}
+	return opts
 }
 
 func (p *PdfRenderer) AddParagraph(runs []TextRun, attrs map[string]string) error {
@@ -245,7 +255,7 @@ func (p *PdfRenderer) AddParagraph(runs []TextRun, attrs map[string]string) erro
 	page := p.getPage()
 	defaultOpts := p.defaultTextOpts()
 
-	alignOpts := p.alignOpts(attrs)
+	paraOpts := p.paraOpts(attrs)
 
 	allPlain := true
 	for _, run := range runs {
@@ -257,7 +267,7 @@ func (p *PdfRenderer) AddParagraph(runs []TextRun, attrs map[string]string) erro
 	if allPlain {
 		page.AutoRow(func(r *template.RowBuilder) {
 			r.Col(12, func(c *template.ColBuilder) {
-				opts := append(defaultOpts, alignOpts...)
+				opts := append(defaultOpts, paraOpts...)
 				c.Text(runs[0].Text, opts...)
 				c.Spacer(document.Mm(2))
 			})
@@ -275,7 +285,7 @@ func (p *PdfRenderer) AddParagraph(runs []TextRun, attrs map[string]string) erro
 					}
 					var opts []template.TextOption
 					opts = append(opts, defaultOpts...)
-					opts = append(opts, alignOpts...)
+					opts = append(opts, paraOpts...)
 				if run.Code {
 					opts = append(opts, template.FontFamily("Courier New"))
 				}
@@ -442,9 +452,41 @@ func (p *PdfRenderer) AddList(items []ListItem, ordered bool) error {
 	if err := p.init(); err != nil {
 		return err
 	}
-	
+
+	// Check if any item has attrs that require per-item styling
+	hasItemAttrs := false
+	for _, item := range items {
+		if item.Attrs != nil {
+			hasItemAttrs = true
+			break
+		}
+	}
+
+	if hasItemAttrs {
+		// Fallback: individual c.Text() with bullet/number marker
+		page := p.getPage()
+		page.AutoRow(func(r *template.RowBuilder) {
+			r.Col(12, func(c *template.ColBuilder) {
+				for i, item := range items {
+					var buf strings.Builder
+					for _, run := range item.Runs {
+						buf.WriteString(run.Text)
+					}
+					prefix := "• "
+					if ordered {
+						prefix = fmt.Sprintf("%d. ", i+1)
+					}
+					opts := p.paraOpts(item.Attrs)
+					c.Text(prefix+buf.String(), opts...)
+				}
+				c.Spacer(document.Mm(3))
+			})
+		})
+		return nil
+	}
+
 	// Flatten to plain text strings for gpdf List/OrderedList
-	// These APIs don't support rich text formatting per item yet
+	// (no per-item attrs, so use native list API)
 	var texts []string
 	var flatten func(items []ListItem)
 	flatten = func(items []ListItem) {
@@ -539,7 +581,7 @@ func (p *PdfRenderer) AddTable(rows []TableRow, attrs map[string]string) error {
 	return nil
 }
 
-func (p *PdfRenderer) AddWrappedParagraph(text string, flags string) error {
+func (p *PdfRenderer) AddWrappedParagraph(text string, flags string, attrs map[string]string) error {
 	if err := p.init(); err != nil {
 		return err
 	}
@@ -562,6 +604,7 @@ func (p *PdfRenderer) AddWrappedParagraph(text string, flags string) error {
 			opts = append(opts, template.Underline())
 		}
 	}
+	opts = append(opts, p.paraOpts(attrs)...)
 
 	page.AutoRow(func(r *template.RowBuilder) {
 		r.Col(12, func(c *template.ColBuilder) {

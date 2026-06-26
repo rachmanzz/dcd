@@ -10,7 +10,7 @@ import (
 var (
 	hRe         = regexp.MustCompile(`^<h(\d)(\s+[^>]*)?>(.+)</h(\d)>$`)
 	pRe         = regexp.MustCompile(`^<p(\s+[^>]*)?>(.*)</p>$`)
-	wRe         = regexp.MustCompile(`^<w:([^>]+)>(.*)</w:([^>]+)>$`)
+	wRe         = regexp.MustCompile(`^<w:([^\s>]+)(\s+[^>]*)?>(.*)</w:([^\s>]+)>$`)
 	imgRe       = regexp.MustCompile(`^<img=(\S+)\s*(.*?)>$`)
 	linkRe      = regexp.MustCompile(`<a=(\S+?)(\s+[^>]*)?>([^<]+)</a>`)
 	loopRe      = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+style\.first=(\w+))?>(.*?)</loop(?::\w+)?>`)
@@ -233,8 +233,10 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 		return ListItem{}, start, nil
 	}
 
+	attrs := parseAttrs(startLine[3:gtIdx])
+
 	if strings.HasSuffix(startLine, "</li>") {
-		return ListItem{Runs: inlineToRuns(startLine[gtIdx+1 : len(startLine)-5])}, start, nil
+		return ListItem{Runs: inlineToRuns(startLine[gtIdx+1 : len(startLine)-5]), Attrs: attrs}, start, nil
 	}
 
 	textAfter := startLine[gtIdx+1:]
@@ -265,7 +267,7 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 	// Strip any nested <ul> or <ol> tags to prevent malformed output
 	raw = nestedListRe.ReplaceAllString(raw, "")
 
-	item := ListItem{Runs: inlineToRuns(raw)}
+	item := ListItem{Runs: inlineToRuns(raw), Attrs: attrs}
 	return item, i, nil
 }
 
@@ -387,8 +389,8 @@ func (c *Compiler) parseLine(line string) error {
 
 	case strings.HasPrefix(line, "<w:"):
 		m := wRe.FindStringSubmatch(line)
-		if len(m) == 4 && m[1] == m[3] {
-			return c.r.AddWrappedParagraph(m[2], m[1])
+		if len(m) == 5 && m[1] == m[4] {
+			return c.r.AddWrappedParagraph(m[3], m[1], parseAttrs(m[2]))
 		}
 
 	case strings.HasPrefix(line, "<img="):

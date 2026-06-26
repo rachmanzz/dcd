@@ -263,6 +263,14 @@ func (d *DocxRenderer) AddParagraph(runs []TextRun, attrs map[string]string) err
 				}
 			}
 		}
+		if attrs != nil {
+			if fc := attrs["font-color"]; fc != "" {
+				run.Color(fc)
+			}
+			if fs := attrs["font-size"]; fs != "" {
+				run.Size(uint64(atof(fs)))
+			}
+		}
 
 		if r.Code {
 			if ctRun.Property == nil {
@@ -542,6 +550,14 @@ func (d *DocxRenderer) AddList(items []ListItem, ordered bool) error {
 						}
 					}
 				}
+				if item.Attrs != nil {
+					if fc := item.Attrs["font-color"]; fc != "" {
+						r.Color(fc)
+					}
+					if fs := item.Attrs["font-size"]; fs != "" {
+						r.Size(uint64(atof(fs)))
+					}
+				}
 
 				if run.Code {
 					if ctRun.Property == nil {
@@ -644,6 +660,14 @@ func (d *DocxRenderer) AddTable(rows []TableRow, attrs map[string]string) error 
 						r.Bold(true)
 					}
 				}
+				if cell.Attrs != nil {
+					if fc := cell.Attrs["font-color"]; fc != "" {
+						r.Color(fc)
+					}
+					if fs := cell.Attrs["font-size"]; fs != "" {
+						r.Size(uint64(atof(fs)))
+					}
+				}
 			}
 
 			// Determine shading: row style > cell attr > row prop
@@ -699,13 +723,30 @@ func (d *DocxRenderer) AddTable(rows []TableRow, attrs map[string]string) error 
 	return nil
 }
 
-func (d *DocxRenderer) AddWrappedParagraph(text string, flags string) error {
+func (d *DocxRenderer) AddWrappedParagraph(text string, flags string, attrs map[string]string) error {
 	if d.root == nil {
 		if err := d.init(); err != nil {
 			return err
 		}
 	}
 	p := d.root.AddParagraph(text)
+
+	if attrs != nil {
+		if len(p.GetCT().Children) > 0 {
+			if run := p.GetCT().Children[0].Run; run != nil {
+				if run.Property == nil {
+					run.Property = &ctypes.RunProperty{}
+				}
+				if fc := attrs["font-color"]; fc != "" {
+					run.Property.Color = ctypes.NewColor(fc)
+				}
+				if fs := attrs["font-size"]; fs != "" {
+					run.Property.Size = ctypes.NewFontSize(uint64(atof(fs)) * 2)
+				}
+			}
+		}
+	}
+
 	for _, f := range strings.Split(flags, "|") {
 		switch f {
 		case "c":

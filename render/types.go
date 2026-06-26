@@ -24,6 +24,7 @@ type TableRow struct {
 type ListItem struct {
 	Runs  []TextRun
 	Items []ListItem
+	Attrs map[string]string
 }
 
 type Renderer interface {
@@ -34,7 +35,7 @@ type Renderer interface {
 	AddPageBreak() error
 	AddImage(src string, attrs map[string]string) error
 	AddHyperlink(text, url string, attrs map[string]string) error
-	AddWrappedParagraph(text string, flags string) error
+	AddWrappedParagraph(text string, flags string, attrs map[string]string) error
 	AddList(items []ListItem, ordered bool) error
 	AddTable(rows []TableRow, attrs map[string]string) error
 	SetPageStyle(props map[string]string) error
