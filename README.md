@@ -1,6 +1,6 @@
 # DCD — Document Compilation Definition
 
-**DCD** (*Document Compilation Description*) is a **DSL (Domain-Specific Language)** and compiler for converting `.dcd` template files into Microsoft Word (`.docx`) and PDF documents. It uses a simple INI-style section format with HTML-like template tags and JSON data binding.
+**DCD** (*Document Compilation Description*) is a **DSL (Domain-Specific Language)** and compiler for converting `.dcd` template files into Microsoft Word (`.docx`) documents. It uses a simple INI-style section format with HTML-like template tags and JSON data binding.
 
 ## Install
 

@@ -98,8 +98,6 @@ Removed redundant `resolveHeaderVar()` function.
 ✅ features.dcd → features.docx   PASS
 ✅ report.dcd → report.docx       PASS (with JSON)
 ✅ invoice.dcd → invoice.docx     PASS (with JSON)
-✅ simple.dcd → simple.pdf        PASS
-✅ report.dcd → report.pdf        PASS (with JSON)
 ```
 
 **Pass Rate:** 100%

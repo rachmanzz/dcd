@@ -1,14 +1,20 @@
 package render
 
 type TextRun struct {
-	Text          string
-	Bold          bool
-	Italic        bool
-	Underline     bool
-	Code          bool
-	Tab           bool
-	Link          string
-	LinkAttrs     map[string]string
+	Text           string
+	Bold           bool
+	Italic         bool
+	Underline      bool
+	UnderlineStyle string
+	Code           bool
+	Strike         bool
+	Mark           bool
+	MarkColor      string
+	Sub            bool
+	Sup            bool
+	Tab            bool
+	Link           string
+	LinkAttrs      map[string]string
 }
 
 type TableCell struct {
@@ -22,9 +28,10 @@ type TableRow struct {
 }
 
 type ListItem struct {
-	Runs  []TextRun
-	Items []ListItem
-	Attrs map[string]string
+	Runs    []TextRun
+	Items   []ListItem
+	Attrs   map[string]string
+	Ordered bool // sub-list type — true for <ol>, false for <ul>
 }
 
 type Renderer interface {

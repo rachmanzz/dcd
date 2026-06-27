@@ -26,12 +26,4 @@ echo "→ report.dcd + report.json → report.docx"
 echo "→ invoice.dcd + invoice.json → invoice.docx"
 ./dcd --data docs/examples/invoice.json docs/examples/invoice.dcd docs/examples/invoice.docx
 
-# PDF examples
-echo "→ simple.dcd → simple.pdf"
-./dcd --format pdf docs/examples/simple.dcd docs/examples/simple.pdf
-
-echo "→ report.dcd + report.json → report.pdf"
-./dcd --format pdf --data docs/examples/report.json docs/examples/report.dcd docs/examples/report.pdf
-
-echo ""
 echo "✓ All examples generated successfully"

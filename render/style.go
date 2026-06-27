@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/gomutex/godocx/wml/stypes"
 )
 
 var specConv = map[string]string{
@@ -223,4 +225,19 @@ func applyFormat(val string, fmtStr string) string {
 		}
 	}
 	return val
+}
+
+func underlineFromString(s string) stypes.Underline {
+	switch s {
+	case "double":
+		return stypes.UnderlineDouble
+	case "dotted":
+		return stypes.UnderlineDotted
+	case "dash":
+		return stypes.UnderlineDash
+	case "wavy":
+		return stypes.UnderlineWavy
+	default:
+		return stypes.UnderlineSingle
+	}
 }

@@ -16,21 +16,26 @@ var (
 	loopRe      = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+style\.first=(\w+))?>(.*?)</loop(?::\w+)?>`)
 	bRe         = regexp.MustCompile(`<b>(.*?)</b>`)
 	iRe         = regexp.MustCompile(`<i>(.*?)</i>`)
-	uRe         = regexp.MustCompile(`<u>(.*?)</u>`)
+	uRe         = regexp.MustCompile(`<u(?:=(\w+))?>([^<]+)</u>`)
+	sRe         = regexp.MustCompile(`<s>(.*?)</s>`)
 	codeRe      = regexp.MustCompile(`<code>(.*?)</code>`)
-	setRe       = regexp.MustCompile(`<set:([^>]+)>(.*?)</set(?::[^>]+)?>`)
+	markRe      = regexp.MustCompile(`<mark(?:\s+color=(\S+))?>(.*?)</mark>`)
+	subRe       = regexp.MustCompile(`<sub>(.*?)</sub>`)
+	supRe       = regexp.MustCompile(`<sup>(.*?)</sup>`)
+	setRe       = regexp.MustCompile(`<set:([^\s>]+)(\s+[^>]+)?>(.*?)</set:([^>]+)>`)
 	brRe        = regexp.MustCompile(`^<br>$`)
 	tabRe       = regexp.MustCompile(`^<tab(\s+size=(\d+))?\s*/?>$`)
 	hrRe        = regexp.MustCompile(`^<hr(\s+[^>]*)?>$`)
 	pageBreakRe = regexp.MustCompile(`^<pb>$|^<page-break>$`)
-	nestedListRe = regexp.MustCompile(`(?s)<(ul|ol)(?:\s+[^>]*)?>(.*?)</(?:ul|ol)>`)
 )
 
 type inlinePart struct {
-	tag       string
-	text      string
-	url       string
-	linkAttrs map[string]string
+	tag            string
+	text           string
+	url            string
+	linkAttrs      map[string]string
+	markColor      string
+	underlineStyle string
 }
 
 func (c *Compiler) renderBody(body string) error {
@@ -236,7 +241,8 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 	attrs := parseAttrs(startLine[3:gtIdx])
 
 	if strings.HasSuffix(startLine, "</li>") {
-		return ListItem{Runs: inlineToRuns(startLine[gtIdx+1 : len(startLine)-5]), Attrs: attrs}, start, nil
+		text := startLine[gtIdx+1 : len(startLine)-5]
+		return ListItem{Runs: inlineToRuns(text), Attrs: attrs}, start, nil
 	}
 
 	textAfter := startLine[gtIdx+1:]
@@ -247,10 +253,23 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 		buf.WriteString("\n")
 	}
 
+	var subItems []ListItem
+	var subOrdered bool
 	i := start
 	for i < len(lines) {
 		line := strings.TrimSpace(lines[i])
 		i++
+
+		if line == "<ul>" || line == "<ol>" {
+			subOrdered = line == "<ol>"
+			var err error
+			subItems, i, err = c.collectListItems(lines, i)
+			if err != nil {
+				return ListItem{}, 0, err
+			}
+			continue
+		}
+
 		if strings.HasSuffix(line, "</li>") {
 			if line != "</li>" {
 				buf.WriteString(line[:len(line)-5])
@@ -263,56 +282,12 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 
 	raw := strings.TrimSpace(buf.String())
 
-	// DISABLED: Nested lists not supported
-	// Strip any nested <ul> or <ol> tags to prevent malformed output
-	raw = nestedListRe.ReplaceAllString(raw, "")
-
 	item := ListItem{Runs: inlineToRuns(raw), Attrs: attrs}
-	return item, i, nil
-}
-
-func parseNestedListItems(raw string, listType string) ([]ListItem, error) {
-	var items []ListItem
-	// Split on <li>...</li> boundaries
-	for {
-		liStart := strings.Index(raw, "<li")
-		if liStart < 0 {
-			break
-		}
-		gtIdx := strings.IndexByte(raw[liStart:], '>')
-		if gtIdx < 0 {
-			break
-		}
-		gtIdx += liStart
-		contentStart := gtIdx + 1
-
-		liEnd := strings.Index(raw[contentStart:], "</li>")
-		if liEnd < 0 {
-			break
-		}
-		liEnd += contentStart
-
-		itemText := strings.TrimSpace(raw[contentStart:liEnd])
-
-		// Check for nested list inside this item
-		item := ListItem{}
-		if nlLoc := nestedListRe.FindStringIndex(itemText); nlLoc != nil {
-			item.Runs = inlineToRuns(strings.TrimSpace(itemText[:nlLoc[0]]))
-			innerRaw := itemText[nlLoc[0]:]
-			if nlLoc2 := nestedListRe.FindStringSubmatchIndex(innerRaw); len(nlLoc2) >= 6 {
-				innerType := innerRaw[nlLoc2[2]:nlLoc2[3]]
-				inner := innerRaw[nlLoc2[4]:nlLoc2[5]]
-				subItems, _ := parseNestedListItems(inner, innerType)
-				item.Items = subItems
-			}
-		} else {
-			item.Runs = inlineToRuns(itemText)
-		}
-
-		items = append(items, item)
-		raw = raw[liEnd+5:]
+	if len(subItems) > 0 {
+		item.Items = subItems
+		item.Ordered = subOrdered
 	}
-	return items, nil
+	return item, i, nil
 }
 
 func (c *Compiler) collectTableRows(lines []string, start int) ([]TableRow, int, error) {
@@ -433,9 +408,10 @@ func inlineToRuns(content string) []TextRun {
 				runs = append(runs, TextRun{Tab: true})
 			}
 		default:
-			// Check if part.tag contains "|" (set:flags format)
-			if strings.Contains(part.tag, "|") {
-				flags := strings.Split(part.tag, "|")
+			// Check if part.tag contains "|" or has attrs (set:flags format)
+			if strings.Contains(part.tag, "|") || strings.Contains(part.tag, " ") {
+				tokens := strings.Fields(part.tag)
+				flags := strings.Split(tokens[0], "|")
 				run := TextRun{Text: part.text}
 				for _, flag := range flags {
 					switch strings.TrimSpace(flag) {
@@ -445,19 +421,33 @@ func inlineToRuns(content string) []TextRun {
 						run.Italic = true
 					case "u":
 						run.Underline = true
+					case "s":
+						run.Strike = true
 					case "code":
 						run.Code = true
+					}
+				}
+				if len(tokens) > 1 {
+					setAttrs := parseAttrs(strings.Join(tokens[1:], " "))
+					if u := setAttrs["underline"]; u != "" {
+						run.UnderlineStyle = u
 					}
 				}
 				runs = append(runs, run)
 			} else {
 				// Single tag (existing behavior)
 				runs = append(runs, TextRun{
-					Text:      part.text,
-					Bold:      part.tag == "b",
-					Italic:    part.tag == "i",
-					Underline: part.tag == "u",
-					Code:      part.tag == "code",
+					Text:           part.text,
+					Bold:           part.tag == "b",
+					Italic:         part.tag == "i",
+					Underline:      part.tag == "u",
+					UnderlineStyle: part.underlineStyle,
+					Strike:         part.tag == "s",
+					Code:           part.tag == "code",
+					Mark:           part.tag == "mark",
+					MarkColor:      part.markColor,
+					Sub:            part.tag == "sub",
+					Sup:            part.tag == "sup",
 				})
 			}
 		}
@@ -471,12 +461,14 @@ func splitInline(s string) []inlinePart {
 
 	for pos < len(s) {
 		type match struct {
-			tag       string
-			text      string
-			url       string
-			linkAttrs map[string]string
-			skip int
-			idx  int
+			tag            string
+			text           string
+			url            string
+			linkAttrs      map[string]string
+			markColor      string
+			underlineStyle string
+			skip           int
+			idx            int
 		}
 		var best *match
 
@@ -512,8 +504,44 @@ func splitInline(s string) []inlinePart {
 		checkLink()
 		check("b", bRe)
 		check("i", iRe)
-		check("u", uRe)
+		check("s", sRe)
 		check("code", codeRe)
+		check("sub", subRe)
+		check("sup", supRe)
+
+		checkUnderline := func() {
+			loc := uRe.FindStringSubmatchIndex(s[pos:])
+			if len(loc) < 6 {
+				return
+			}
+			idx := loc[0]
+			uStyle := ""
+			if loc[2] >= 0 {
+				uStyle = s[pos+loc[2] : pos+loc[3]]
+			}
+			text := s[pos+loc[4] : pos+loc[5]]
+			if best == nil || idx < best.idx {
+				best = &match{tag: "u", text: text, underlineStyle: uStyle, skip: loc[1] - loc[0], idx: idx}
+			}
+		}
+		checkUnderline()
+
+		checkMark := func() {
+			loc := markRe.FindStringSubmatchIndex(s[pos:])
+			if len(loc) < 6 {
+				return
+			}
+			idx := loc[0]
+			color := ""
+			if loc[2] >= 0 {
+				color = s[pos+loc[2] : pos+loc[3]]
+			}
+			text := s[pos+loc[4] : pos+loc[5]]
+			if best == nil || idx < best.idx {
+				best = &match{tag: "mark", text: text, markColor: color, skip: loc[1] - loc[0], idx: idx}
+			}
+		}
+		checkMark()
 
 		checkTab := func() {
 			loc := tabRe.FindStringSubmatchIndex(s[pos:])
@@ -534,14 +562,25 @@ func splitInline(s string) []inlinePart {
 		// Check for <set:flags> tag
 		checkSet := func() {
 			loc := setRe.FindStringSubmatchIndex(s[pos:])
-			if len(loc) < 6 {
+			if len(loc) < 10 {
 				return
 			}
 			idx := loc[0]
-			flags := s[pos+loc[2] : pos+loc[3]]
-			text := s[pos+loc[4] : pos+loc[5]]
+			openFlags := s[pos+loc[2] : pos+loc[3]]
+			closeFlags := s[pos+loc[8] : pos+loc[9]]
+			if openFlags != closeFlags {
+				return
+			}
+			attrs := ""
+			if loc[4] >= 0 {
+				attrs = s[pos+loc[4] : pos+loc[5]]
+			}
+			text := s[pos+loc[6] : pos+loc[7]]
+			if attrs != "" {
+				openFlags = openFlags + " " + attrs
+			}
 			if best == nil || idx < best.idx {
-				best = &match{tag: flags, text: text, skip: loc[1] - loc[0], idx: idx}
+				best = &match{tag: openFlags, text: text, skip: loc[1] - loc[0], idx: idx}
 			}
 		}
 		checkSet()
@@ -554,7 +593,7 @@ func splitInline(s string) []inlinePart {
 		if best.idx > 0 {
 			parts = append(parts, inlinePart{text: s[pos : pos+best.idx]})
 		}
-		parts = append(parts, inlinePart{tag: best.tag, text: best.text, url: best.url, linkAttrs: best.linkAttrs})
+		parts = append(parts, inlinePart{tag: best.tag, text: best.text, url: best.url, linkAttrs: best.linkAttrs, markColor: best.markColor, underlineStyle: best.underlineStyle})
 
 		pos += best.idx + best.skip
 	}

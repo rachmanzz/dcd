@@ -19,7 +19,7 @@ All tags go in the body section (after `---`).
 |-----------|---------|-------------|
 | `color` | `color=#333` | Line color |
 | `width` | `width=50%` or `width=100mm` | Width |
-| `thick` | `thick=2pt` | Thickness |
+| `thick` | `thick=2pt` | Thickness (library limitation — `ctypes.Border` missing `Sz` field; **not available**) |
 
 ## Inline Tags
 
@@ -31,6 +31,10 @@ Inline formatting works inside `<p>`, `<li>`, and `<col>` tags.
 | `<i>text</i>` | Italic |
 | `<u>text</u>` | Underline |
 | `<code>text</code>` | Monospace / code font |
+| `<s>text</s>` | Strikethrough |
+| `<mark>text</mark>` | Highlight |
+| `<sub>text</sub>` | Subscript |
+| `<sup>text</sup>` | Superscript |
 | `<set:flags>text</set>` | Combined formatting |
 | `<a=url>text</a>` | Hyperlink |
 
@@ -45,7 +49,7 @@ Use `<set:flags>` to apply multiple formatting styles:
 <p><set:b|i|u>All three</set:b|i|u></p>
 ```
 
-**Available flags:** `b`, `i`, `u`, `code`
+**Available flags:** `b` (bold), `i` (italic), `u` (underline), `s` (strikethrough), `code` (monospace), `mark` (highlight), `sub` (subscript), `sup` (superscript)
 
 ### Examples
 

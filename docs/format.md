@@ -193,7 +193,7 @@ color=#000000
 
 ## Limitations
 
-- **Nested lists:** Not supported. Use flat lists only.
-- **PDF inline formatting:** Limited support in lists/tables (use DOCX for rich formatting).
+- **Nested lists:** Not supported. Use flat lists only. See `KNOWN-LIMITATIONS.md` for implementation roadmap.
 
-See `KNOWN-LIMITATIONS.md` for details.
+
+See `KNOWN-LIMITATIONS.md` for limitations, workarounds, and implementation roadmap.

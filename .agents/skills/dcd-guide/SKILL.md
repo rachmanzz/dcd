@@ -9,15 +9,15 @@ This guide helps AI assistants (Claude, Gemini, OpenCode, etc.) understand and w
 
 ## Project Overview
 
-**DCD** is a document compilation system that converts `.dcd` template files into DOCX or PDF documents.
+**DCD** is a document compilation system that converts `.dcd` template files into DOCX documents.
 
 **Core Concept:**
 ```
-.dcd template + JSON data -> Parser -> Compiler -> Renderer -> .docx/.pdf
+.dcd template + JSON data -> Parser -> Compiler -> Renderer -> .docx
 ```
 
 **Language:** Go
-**Output Formats:** DOCX, PDF
+**Output Formats:** DOCX
 **Primary Use:** Automated document generation (invoices, reports, contracts, etc.)
 
 ## Project Structure
@@ -26,10 +26,10 @@ This guide helps AI assistants (Claude, Gemini, OpenCode, etc.) understand and w
 document-compilation/
 ├── cmd/dcd/          # CLI application
 ├── parse/            # .dcd file parser
-├── render/           # Document renderers (DOCX, PDF)
+├── render/           # Document renderer (DOCX)
 │   ├── compiler.go   # Template compiler
 │   ├── docx.go       # DOCX renderer
-│   ├── pdf.go        # PDF renderer
+
 │   ├── body.go       # Body content parser
 │   ├── style.go      # Style utilities
 │   └── types.go      # Data types
@@ -268,7 +268,7 @@ type Section struct {
 - Images: `<img>`
 - Links: `<a>`
 
-### Renderers (`render/docx.go`, `render/pdf.go`)
+### Renderer (`render/docx.go`)
 
 **Purpose:** Generate actual document files
 
@@ -355,7 +355,7 @@ type TextRun struct {
 
 5. **Update renderers:**
 ```go
-// In render/docx.go and render/pdf.go - handle runs[i].Highlight in AddParagraph
+// In render/docx.go - handle runs[i].Highlight in AddParagraph
 ```
 
 6. **Document:**
@@ -424,8 +424,6 @@ go build -o dcd ./cmd/dcd
 # Test with data
 ./dcd --data docs/examples/invoice.json docs/examples/invoice.dcd test-invoice.docx
 
-# Test PDF
-./dcd --format pdf docs/examples/simple.dcd test.pdf
 ```
 
 ### Automated Testing

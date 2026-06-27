@@ -409,7 +409,7 @@ All other changes are backward compatible or additive.
 ✅ All unit features tested
 ✅ All integration scenarios tested  
 ✅ DOCX output verified
-✅ PDF output verified
+
 ✅ All existing examples compile
 ✅ Backward compatibility verified
 ✅ Build passes: `go build ./...`

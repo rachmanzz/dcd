@@ -234,9 +234,11 @@ Sections without `var` or `keys` are allowed: unresolvable `{{...}}` variables p
 | `<w:b>...</w:b>`                 | Bold                            |
 | `<w:i>...</w:i>`                 | Italic                          |
 | `<w:u>...</w:u>`                 | Underline                       |
+| `<w:s>...</w:s>`                 | Strikethrough                   |
 | `<w:c\|b>...</w:c\|b>`           | Center + Bold                   |
 | `<w:b\|i>...</w:b\|i>`           | Bold + Italic                   |
 | `<w:b\|i\|u>...</w:b\|i\|u>`     | Bold + Italic + Underline       |
+| `<w:c\|s>...</w:c\|s>`           | Center + Strikethrough           |
 | `<p>`                            | Paragraph                       |
 | `<br>`                           | Line break                      |
 | `<loop x from var>...</loop>`     | Iterate array `var`, each item as `x` |
@@ -252,7 +254,11 @@ Sections without `var` or `keys` are allowed: unresolvable `{{...}}` variables p
 | `<b>...</b>`     | Bold                    |
 | `<i>...</i>`     | Italic                  |
 | `<u>...</u>`     | Underline               |
+| `<s>...</s>`     | Strikethrough           |
 | `<code>...</code>`| Monospace / code font  |
+| `<mark>...</mark>`| Highlight (default yellow, optional: `<mark color=green>`) |
+| `<sub>...</sub>`  | Subscript               |
+| `<sup>...</sup>`  | Superscript             |
 | `<set:flags>...</set:flags>` | Combined formatting |
 
 Combined formatting with `<set:>`:
@@ -262,11 +268,36 @@ Combined formatting with `<set:>`:
 <p><set:b|u>Bold and Underline</set:b|u></p>
 <p><set:i|code>Italic monospace</set:i|code></p>
 <p><set:b|i|u>Bold, Italic, and Underline</set:b|i|u></p>
+<p><set:s|b>Strikethrough and Bold</set:s|b></p>
 ```
 
-**Available flags:** `b` (bold), `i` (italic), `u` (underline), `code` (monospace)
+**Available flags:** `b` (bold), `i` (italic), `u` (underline), `s` (strikethrough), `code` (monospace)
 
-**Closing tag:** Can be `</set:flags>` (matching) or `</set>` (simplified)
+**Closing tag:** Must match opening flags: `<set:u>text</set:u>`, `<set:b|i>text</set:b|i>`
+
+**Attributes:** Pass additional formatting via attributes on `<set:flags>`:
+
+```
+<p><set:u underline=double>double underline</set:u></p>
+<p><set:b|u underline=dash>bold with dashed underline</set:b|u></p>
+```
+
+| Attribute    | Values                    | Description        |
+|--------------|---------------------------|--------------------|
+| `underline`  | `single`, `double`, `dotted`, `dash`, `wavy` | Underline style |
+
+### Block Tags with Attributes
+
+Block `<w:>` tags also accept attributes for additional formatting:
+
+```
+<w:u underline=double>double underline paragraph</w:u>
+<w:u underline=dash>dashed underline paragraph</w:u>
+```
+
+| Tag                     | Attribute               | Values                    | Description        |
+|-------------------------|-------------------------|---------------------------|--------------------|
+| `<w:u>`                 | `underline`             | `single`, `double`, `dotted`, `dash`, `wavy` | Underline style |
 
 ## 3. Headings
 
@@ -324,18 +355,22 @@ Local override (higher priority):
 
 ### Style Properties
 
-| Property      | Description             |
-|---------------|-------------------------|
-| `font-family` | Heading font            |
-| `font-size`   | Font size (pt)          |
-| `color`  | Text color              |
-| `bold`        | `true` / `false`        |
-| `italic`      | `true` / `false`        |
-| `underline`   | `true` / `false`        |
-| `align`       | `left`, `center`, `right` |
-| `space-before`| Space before (pt)       |
-| `space-after` | Space after (pt)        |
-| `border-bottom` | Bottom border line    |
+| Property        | Description                      |
+|-----------------|----------------------------------|
+| `font-family`   | Heading font                     |
+| `font-size`     | Font size (pt)                   |
+| `color`         | Text color                       |
+| `bold`          | `true` / `false`                 |
+| `italic`        | `true` / `false`                 |
+| `strike`        | `true` / `false`                 |
+| `underline`     | `true`, `single`, `double`, `dotted`, `dash`, `wavy` |
+| `caps`          | `true` / `false` — all capitals |
+| `small-caps`    | `true` / `false` — small capitals |
+| `letter-spacing`| Letter spacing (pt)              |
+| `align`         | `left`, `center`, `right`        |
+| `space-before`  | Space before (pt)                |
+| `space-after`   | Space after (pt)                 |
+| `border-bottom` | Bottom border line               |
 
 ### Precedence
 
@@ -392,7 +427,7 @@ Local override (higher priority):
 | `border`  | `1`       | Border width         |
 | `width`   | `100%`    | Table width¹         |
 
-¹ Not supported in v0.1.5 (library limitation).
+¹ Not yet implemented (roadmap item).
 
 ### Row Properties
 
@@ -411,7 +446,7 @@ Local override (higher priority):
 | `colspan` | `2`           | Merge columns¹       |
 | `rowspan` | `2`           | Merge rows¹          |
 
-¹ Not supported in v0.1.5 (library limitation).
+¹ `docx.Cell.ct` is unexported — `GridSpan`/`VMerge`/`CellWidth` cannot be set. Library patch required.
 
 ### Named Table Style
 
@@ -523,7 +558,7 @@ Properties:
 | `color`  | `#cccccc` | Line color      |
 | `thick`  | `2`       | Thickness (pt)¹ |
 
-¹ Not supported in v0.1.5 (library limitation).
+¹ Not yet implemented (roadmap item).
 
 ## 6. Loops
 
@@ -762,7 +797,7 @@ author=Author Name
 
 These properties are written to:
 - **DOCX:** Document properties (`docProps/core.xml`)
-- **PDF:** Document metadata (Title, Subject, Author fields)
+
 
 ### Built-in Variable: `{{title}}`
 
@@ -814,7 +849,7 @@ The document will have:
 ### Notes
 
 - All properties are optional
-- Properties are visible in document properties dialog (DOCX) or PDF metadata
+- Properties are visible in document properties dialog (DOCX)
 - The `{{title}}` variable only works in headers/footers and body content
 - Use `{{date}}` for current date, `{{page}}` for page numbers
 
@@ -845,9 +880,7 @@ center={{date}}
 | `border`      | `top`, `bottom`, `none`                |
 | `margin`      | Distance from header/footer to content |
 | `first-page`  | `true` / `false` — show on page 1     |
-| `mirror`      | `true` / `false` — swap left↔right¹   |
-
-¹ Not fully supported in v0.1.5 (library limitation).
+| `mirror`      | `true` / `false` — swap left↔right    |
 
 ### justify_between
 

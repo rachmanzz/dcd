@@ -34,8 +34,7 @@ dcd report.dcd
 # Specify output path
 dcd report.dcd my-report.docx
 
-# Generate PDF
-dcd --format pdf report.dcd report.pdf
+
 
 # With JSON data
 dcd --data data.json invoice.dcd invoice.docx
@@ -45,7 +44,7 @@ dcd --data data.json invoice.dcd invoice.docx
 
 | Option | Short | Default | Description |
 |--------|-------|---------|-------------|
-| `--format` | `-f` | `docx` | Output format: `docx` or `pdf` |
+
 | `--data` | `-d` | none | JSON file with variables |
 | `--help` | `-h` | - | Show help message |
 | `--version` | `-v` | - | Show version |
@@ -154,16 +153,7 @@ keys=number,customer,items,total
 dcd --data data.json invoice.dcd invoice.docx
 ```
 
-### Multiple Formats
 
-```bash
-# Generate both DOCX and PDF
-dcd report.dcd report.docx
-dcd --format pdf report.dcd report.pdf
-
-# Or in one line
-dcd report.dcd report.docx && dcd -f pdf report.dcd report.pdf
-```
 
 ## Workflows
 
@@ -354,7 +344,7 @@ report-data.json
 
 # Output files (with date)
 invoice-2025-01-15.docx
-report-2025-01-15.pdf
+report-2025-01-15.docx
 ```
 
 ### Version Control
@@ -365,7 +355,7 @@ git add templates/*.dcd
 
 # Ignore generated files
 echo "*.docx" >> .gitignore
-echo "*.pdf" >> .gitignore
+
 echo "output/" >> .gitignore
 
 # Track sample data

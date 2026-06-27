@@ -501,21 +501,13 @@ import (
     "github.com/rachmanzz/dcd/render"
 )
 
-func GenerateDocument(templatePath string, dataset *data.DataSet, outputPath string, format string) error {
+func GenerateDocument(templatePath string, dataset *data.DataSet, outputPath string) error {
     doc, err := parse.Parse(templatePath)
     if err != nil {
         return err
     }
 
-    var renderer render.Renderer
-    switch format {
-    case "pdf":
-        renderer = render.NewPdfRenderer()
-    case "docx":
-        renderer = render.NewDocxRenderer()
-    default:
-        return fmt.Errorf("unsupported format: %s", format)
-    }
+    renderer := render.NewDocxRenderer()
 
     compiler := render.New(doc, dataset, renderer)
     return compiler.Run(outputPath)
@@ -527,15 +519,11 @@ func main() {
         "author": "John Doe",
     })
 
-    if err := GenerateDocument("template.dcd", ds, "output.docx", "docx"); err != nil {
+    if err := GenerateDocument("template.dcd", ds, "output.docx"); err != nil {
         log.Fatal(err)
     }
 
-    if err := GenerateDocument("template.dcd", ds, "output.pdf", "pdf"); err != nil {
-        log.Fatal(err)
-    }
-
-    log.Println("Documents generated successfully")
+    log.Println("Document generated successfully")
 }
 ```
 

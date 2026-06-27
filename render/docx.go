@@ -162,6 +162,13 @@ func (d *DocxRenderer) AddHeading(text string, level int, attrs map[string]strin
 		}
 	}
 
+	if s := chooseAttr(def, style, attrs, "keep-next"); s == "true" {
+		pPr.KeepNext = ctypes.OnOffFromBool(true)
+	}
+	if s := chooseAttr(def, style, attrs, "keep-lines"); s == "true" {
+		pPr.KeepLines = ctypes.OnOffFromBool(true)
+	}
+
 	// Run-level properties
 	for _, child := range p.GetCT().Children {
 		if child.Run == nil {
@@ -184,8 +191,20 @@ func (d *DocxRenderer) AddHeading(text string, level int, attrs map[string]strin
 		if s := chooseAttr(def, style, attrs, "italic"); s != "" {
 			prop.Italic = ctypes.OnOffFromBool(s == "true")
 		}
+		if s := chooseAttr(def, style, attrs, "strike"); s != "" {
+			prop.Strike = ctypes.OnOffFromBool(s == "true")
+		}
 		if s := chooseAttr(def, style, attrs, "underline"); s != "" {
-			prop.Underline = ctypes.NewGenSingleStrVal(stypes.UnderlineSingle)
+			prop.Underline = ctypes.NewGenSingleStrVal(underlineFromString(s))
+		}
+		if s := chooseAttr(def, style, attrs, "caps"); s != "" {
+			prop.Caps = ctypes.OnOffFromBool(s == "true")
+		}
+		if s := chooseAttr(def, style, attrs, "small-caps"); s != "" {
+			prop.SmallCaps = ctypes.OnOffFromBool(s == "true")
+		}
+		if s := chooseAttr(def, style, attrs, "letter-spacing"); s != "" {
+			prop.Spacing = &ctypes.DecimalNum{Val: int(atof(s) * 20)}
 		}
 		if s := chooseAttr(def, style, attrs, "font-family"); s != "" {
 			prop.Fonts = &ctypes.RunFonts{
@@ -281,6 +300,12 @@ func (d *DocxRenderer) AddParagraph(runs []TextRun, attrs map[string]string) err
 				HAnsi: "Courier New",
 			}
 		}
+		if r.Strike {
+			if ctRun.Property == nil {
+				ctRun.Property = &ctypes.RunProperty{}
+			}
+			ctRun.Property.Strike = ctypes.OnOffFromBool(true)
+		}
 		if r.Bold {
 			run.Bold(true)
 		}
@@ -291,7 +316,29 @@ func (d *DocxRenderer) AddParagraph(runs []TextRun, attrs map[string]string) err
 		if isLink && r.LinkAttrs["underline"] == "false" {
 			// skip underline
 		} else if isLink || r.Underline {
-			run.Underline(stypes.UnderlineSingle)
+			run.Underline(underlineFromString(r.UnderlineStyle))
+		}
+		if r.Mark {
+			if ctRun.Property == nil {
+				ctRun.Property = &ctypes.RunProperty{}
+			}
+			color := "yellow"
+			if r.MarkColor != "" {
+				color = r.MarkColor
+			}
+			ctRun.Property.Highlight = ctypes.NewCTString(color)
+		}
+		if r.Sub {
+			if ctRun.Property == nil {
+				ctRun.Property = &ctypes.RunProperty{}
+			}
+			ctRun.Property.VertAlign = ctypes.NewGenSingleStrVal(stypes.VerticalAlignRunSubscript)
+		}
+		if r.Sup {
+			if ctRun.Property == nil {
+				ctRun.Property = &ctypes.RunProperty{}
+			}
+			ctRun.Property.VertAlign = ctypes.NewGenSingleStrVal(stypes.VerticalAlignRunSuperscript)
 		}
 		if isLink {
 			linkColor := "0055CC"
@@ -516,19 +563,38 @@ func (d *DocxRenderer) AddHyperlink(text, url string, attrs map[string]string) e
 }
 
 func (d *DocxRenderer) AddList(items []ListItem, ordered bool) error {
+	return d.addListAtDepth(items, ordered, 0)
+}
+
+func (d *DocxRenderer) addListAtDepth(items []ListItem, ordered bool, depth int) error {
 	if d.root == nil {
 		if err := d.init(); err != nil {
 			return err
 		}
 	}
-	style := "List Bullet"
-	if ordered {
-		style = "List Number"
+	var style, numID string
+	switch {
+	case ordered && depth == 0:
+		style, numID = "ListNumber", "5"
+	case ordered && depth == 1:
+		style, numID = "ListNumber2", "6"
+	case ordered && depth == 2:
+		style, numID = "ListNumber3", "7"
+	case !ordered && depth == 0:
+		style, numID = "ListBullet", "1"
+	case !ordered && depth == 1:
+		style, numID = "ListBullet2", "2"
+	case !ordered && depth == 2:
+		style, numID = "ListBullet3", "3"
+	default:
+		style, numID = "ListParagraph", "1"
 	}
 	for _, item := range items {
 		if len(item.Runs) > 0 {
 			p := d.root.AddEmptyParagraph()
 			p.Style(style)
+			id, _ := strconv.Atoi(numID)
+			p.Numbering(id, 0)
 			for _, run := range item.Runs {
 				r := p.AddText(run.Text)
 				ctRun := p.GetCT().Children[len(p.GetCT().Children)-1].Run
@@ -575,12 +641,40 @@ func (d *DocxRenderer) AddList(items []ListItem, ordered bool) error {
 					r.Italic(true)
 				}
 				if run.Underline {
-					r.Underline(stypes.UnderlineSingle)
+					r.Underline(underlineFromString(run.UnderlineStyle))
+				}
+				if run.Strike {
+					if ctRun.Property == nil {
+						ctRun.Property = &ctypes.RunProperty{}
+					}
+					ctRun.Property.Strike = ctypes.OnOffFromBool(true)
+				}
+				if run.Mark {
+					if ctRun.Property == nil {
+						ctRun.Property = &ctypes.RunProperty{}
+					}
+					color := "yellow"
+					if run.MarkColor != "" {
+						color = run.MarkColor
+					}
+					ctRun.Property.Highlight = ctypes.NewCTString(color)
+				}
+				if run.Sub {
+					if ctRun.Property == nil {
+						ctRun.Property = &ctypes.RunProperty{}
+					}
+					ctRun.Property.VertAlign = ctypes.NewGenSingleStrVal(stypes.VerticalAlignRunSubscript)
+				}
+				if run.Sup {
+					if ctRun.Property == nil {
+						ctRun.Property = &ctypes.RunProperty{}
+					}
+					ctRun.Property.VertAlign = ctypes.NewGenSingleStrVal(stypes.VerticalAlignRunSuperscript)
 				}
 			}
 		}
 		if len(item.Items) > 0 {
-			if err := d.AddList(item.Items, ordered); err != nil {
+			if err := d.addListAtDepth(item.Items, item.Ordered, depth+1); err != nil {
 				return err
 			}
 		}
@@ -641,6 +735,12 @@ func (d *DocxRenderer) AddTable(rows []TableRow, attrs map[string]string) error 
 						HAnsi: "Courier New",
 					}
 				}
+				if run.Strike {
+					if ctRun.Property == nil {
+						ctRun.Property = &ctypes.RunProperty{}
+					}
+					ctRun.Property.Strike = ctypes.OnOffFromBool(true)
+				}
 				if run.Bold {
 					r.Bold(true)
 				}
@@ -648,7 +748,29 @@ func (d *DocxRenderer) AddTable(rows []TableRow, attrs map[string]string) error 
 					r.Italic(true)
 				}
 				if run.Underline {
-					r.Underline(stypes.UnderlineSingle)
+					r.Underline(underlineFromString(run.UnderlineStyle))
+				}
+				if run.Mark {
+					if ctRun.Property == nil {
+						ctRun.Property = &ctypes.RunProperty{}
+					}
+					color := "yellow"
+					if run.MarkColor != "" {
+						color = run.MarkColor
+					}
+					ctRun.Property.Highlight = ctypes.NewCTString(color)
+				}
+				if run.Sub {
+					if ctRun.Property == nil {
+						ctRun.Property = &ctypes.RunProperty{}
+					}
+					ctRun.Property.VertAlign = ctypes.NewGenSingleStrVal(stypes.VerticalAlignRunSubscript)
+				}
+				if run.Sup {
+					if ctRun.Property == nil {
+						ctRun.Property = &ctypes.RunProperty{}
+					}
+					ctRun.Property.VertAlign = ctypes.NewGenSingleStrVal(stypes.VerticalAlignRunSuperscript)
 				}
 
 				// Apply named style font properties to each run
@@ -773,13 +895,69 @@ func (d *DocxRenderer) AddWrappedParagraph(text string, flags string, attrs map[
 					run.Property.Italic = ctypes.OnOffFromBool(true)
 				}
 			}
+		case "s":
+			if len(p.GetCT().Children) > 0 {
+				if run := p.GetCT().Children[0].Run; run != nil {
+					if run.Property == nil {
+						run.Property = &ctypes.RunProperty{}
+					}
+					run.Property.Strike = ctypes.OnOffFromBool(true)
+				}
+			}
 		case "u":
 			if len(p.GetCT().Children) > 0 {
 				if run := p.GetCT().Children[0].Run; run != nil {
 					if run.Property == nil {
 						run.Property = &ctypes.RunProperty{}
 					}
-					run.Property.Underline = ctypes.NewGenSingleStrVal(stypes.UnderlineSingle)
+					uType := "single"
+					if attrs != nil && attrs["underline"] != "" {
+						uType = attrs["underline"]
+					}
+					run.Property.Underline = ctypes.NewGenSingleStrVal(underlineFromString(uType))
+				}
+			}
+		case "code":
+			if len(p.GetCT().Children) > 0 {
+				if run := p.GetCT().Children[0].Run; run != nil {
+					if run.Property == nil {
+						run.Property = &ctypes.RunProperty{}
+					}
+					run.Property.Fonts = &ctypes.RunFonts{
+						Ascii: "Courier New",
+						HAnsi: "Courier New",
+					}
+				}
+			}
+		case "mark":
+			if len(p.GetCT().Children) > 0 {
+				if run := p.GetCT().Children[0].Run; run != nil {
+					if run.Property == nil {
+						run.Property = &ctypes.RunProperty{}
+					}
+					color := "yellow"
+					if attrs != nil && attrs["color"] != "" {
+						color = attrs["color"]
+					}
+					run.Property.Highlight = ctypes.NewCTString(color)
+				}
+			}
+		case "sub":
+			if len(p.GetCT().Children) > 0 {
+				if run := p.GetCT().Children[0].Run; run != nil {
+					if run.Property == nil {
+						run.Property = &ctypes.RunProperty{}
+					}
+					run.Property.VertAlign = ctypes.NewGenSingleStrVal(stypes.VerticalAlignRunSubscript)
+				}
+			}
+		case "sup":
+			if len(p.GetCT().Children) > 0 {
+				if run := p.GetCT().Children[0].Run; run != nil {
+					if run.Property == nil {
+						run.Property = &ctypes.RunProperty{}
+					}
+					run.Property.VertAlign = ctypes.NewGenSingleStrVal(stypes.VerticalAlignRunSuperscript)
 				}
 			}
 		}
@@ -866,8 +1044,12 @@ func (d *DocxRenderer) SetHeader(props map[string]string) error {
 	if d.root.Document.Body.SectPr == nil {
 		d.root.Document.Body.SectPr = ctypes.NewSectionProper()
 	}
+	hdrType := stypes.HdrFtrDefault
+	if cfg.mirror {
+		hdrType = stypes.HdrFtrEven
+	}
 	d.root.Document.Body.SectPr.HeaderReference = &ctypes.HeaderReference{
-		Type: stypes.HdrFtrDefault,
+		Type: hdrType,
 		ID:   d.headerRID,
 	}
 
@@ -915,8 +1097,12 @@ func (d *DocxRenderer) SetFooter(props map[string]string) error {
 	if d.root.Document.Body.SectPr == nil {
 		d.root.Document.Body.SectPr = ctypes.NewSectionProper()
 	}
+	ftrType := stypes.HdrFtrDefault
+	if cfg.mirror {
+		ftrType = stypes.HdrFtrEven
+	}
 	d.root.Document.Body.SectPr.FooterReference = &ctypes.FooterReference{
-		Type: stypes.HdrFtrDefault,
+		Type: ftrType,
 		ID:   d.footerRID,
 	}
 

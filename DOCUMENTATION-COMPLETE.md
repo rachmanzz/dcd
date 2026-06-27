@@ -186,8 +186,6 @@ docs/
 ✅ features.dcd → features.docx
 ✅ report.dcd → report.docx (with JSON data)
 ✅ invoice.dcd → invoice.docx (with JSON data)
-✅ simple.dcd → simple.pdf
-✅ report.dcd → report.pdf
 
 ### Documentation Consistency
 ✅ Property names consistent across all docs

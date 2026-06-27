@@ -3,7 +3,7 @@
 ## Usage
 
 ```bash
-dcd [--format FORMAT] [--data FILE] <input.dcd> [output]
+dcd [--data FILE] <input.dcd> [output]
 ```
 
 ## Arguments
@@ -11,13 +11,12 @@ dcd [--format FORMAT] [--data FILE] <input.dcd> [output]
 | Argument | Description |
 |----------|-------------|
 | `input.dcd` | Input document file (required) |
-| `output` | Output file path (optional, defaults to `output.docx` or `output.pdf`) |
+| `output` | Output file path (optional, defaults to `output.docx`) |
 
 ## Flags
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--format` | `docx` | Output format: `docx` or `pdf` |
 | `--data` | `""` | JSON file with variables |
 
 ## Examples
@@ -28,13 +27,6 @@ dcd report.dcd
 
 # Specify output path
 dcd report.dcd report.docx
-
-# PDF output
-dcd --format pdf report.dcd report.pdf
-
-# PDF with default name
-dcd --format pdf report.dcd
-# → output.pdf
 
 # With JSON variables
 dcd --data report.json report.dcd report.docx
@@ -104,10 +96,6 @@ keys=number,items
 for file in reports/*.dcd; do
   dcd --data data.json "$file" "output/$(basename "$file" .dcd).docx"
 done
-
-# Generate both DOCX and PDF
-dcd report.dcd report.docx
-dcd --format pdf report.dcd report.pdf
 ```
 
 ### Environment Variables

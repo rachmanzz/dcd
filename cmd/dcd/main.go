@@ -12,10 +12,9 @@ import (
 )
 
 func main() {
-	format := flag.String("format", "docx", "Output format: docx or pdf")
 	dataFile := flag.String("data", "", "JSON file with variables")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: dcd [--format docx|pdf] [--data file.json] <input.dcd> [output]\n")
+		fmt.Fprintf(os.Stderr, "Usage: dcd [--data file.json] <input.dcd> [output]\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -28,12 +27,7 @@ func main() {
 	input := flag.Arg(0)
 	output := flag.Arg(1)
 	if output == "" {
-		switch *format {
-		case "pdf":
-			output = "output.pdf"
-		default:
-			output = "output.docx"
-		}
+		output = "output.docx"
 	}
 
 	doc, err := parse.Parse(input)
@@ -56,16 +50,7 @@ func main() {
 	}
 	ds := data.NewDataSet(src)
 
-	var r render.Renderer
-	switch *format {
-	case "docx":
-		r = render.NewDocxRenderer()
-	case "pdf":
-		r = render.NewPdfRenderer()
-	default:
-		fmt.Fprintf(os.Stderr, "Error: unknown format %q (use docx or pdf)\n", *format)
-		os.Exit(1)
-	}
+	r := render.NewDocxRenderer()
 
 	if err := render.New(doc, ds, r).Run(output); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)

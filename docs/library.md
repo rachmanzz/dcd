@@ -23,7 +23,7 @@ ds := data.NewDataSet(map[string]any{
 })
 
 // Choose a renderer
-r := render.NewDocxRenderer()  // or render.NewPdfRenderer()
+r := render.NewDocxRenderer()
 
 // Compile and save
 err = render.New(doc, ds, r).Run("output.docx")
@@ -254,6 +254,6 @@ r.AddList([]render.ListItem{
 ## See Also
 
 - `parse/` — Parser implementation
-- `render/` — Renderer implementations (DOCX, PDF)
+- `render/` — Renderer implementation (DOCX)
 - `data/` — DataSet for variable resolution
 - `.agents/skills/` — Detailed feature documentation

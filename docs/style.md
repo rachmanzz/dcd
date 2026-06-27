@@ -59,7 +59,17 @@ align=left
 space-before=18
 space-after=12
 border-bottom=single
+keep-next=true
+keep-lines=true
 ```
+
+Heading-specific properties:
+
+| Property | Description |
+|----------|-------------|
+| `keep-next` | Keep heading on same page as next paragraph |
+| `keep-lines` | Keep all heading lines on one page |
+| `numbering` | Not available — requires library support for numbering definitions |
 
 ## Table Row Styles (`[style:table name]`)
 
@@ -116,6 +126,8 @@ border=top
 | `color` | Hex color |
 | `border` | `top` or `bottom` line |
 | `margin` | Header/footer margin |
+| `first-page` | `true` / `false` — show on page 1 |
+| `mirror` | `true` / `false` — swap left↔right for even pages |
 
 ### justify_between Example
 
