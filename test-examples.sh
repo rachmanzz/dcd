@@ -26,4 +26,12 @@ echo "→ report.dcd + report.json → report.docx"
 echo "→ invoice.dcd + invoice.json → invoice.docx"
 ./dcd --data docs/examples/invoice.json docs/examples/invoice.dcd docs/examples/invoice.docx
 
+# Inline test (no data)
+echo "→ inline-test.dcd → inline-test.docx"
+./dcd docs/examples/inline-test.dcd docs/examples/inline-test.docx
+
+# Set-tag demo (no data)
+echo "→ set-tag-demo.dcd → settag-demo.docx"
+./dcd docs/examples/set-tag-demo.dcd docs/examples/settag-demo.docx
+
 echo "✓ All examples generated successfully"
