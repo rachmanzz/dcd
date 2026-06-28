@@ -13,7 +13,7 @@ var (
 	wRe         = regexp.MustCompile(`^<w:([^\s>]+)(\s+[^>]*)?>(.*)</w:([^\s>]+)>$`)
 	imgRe       = regexp.MustCompile(`^<img=(\S+)\s*(.*?)>$`)
 	linkRe      = regexp.MustCompile(`<a=(\S+?)(\s+[^>]*)?>([^<]+)</a>`)
-	loopRe      = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+style\.first=(\w+))?>(.*?)</loop(?::\w+)?>`)
+	loopRe      = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+style\.first=(\w+))?>(.*?)</loop(?::(\w+))?>`)
 	bRe         = regexp.MustCompile(`<b>(.*?)</b>`)
 	iRe         = regexp.MustCompile(`<i>(.*?)</i>`)
 	uRe         = regexp.MustCompile(`<u(?:=(\w+))?>([^<]+)</u>`)
@@ -72,6 +72,33 @@ func (c *Compiler) renderBody(body string) error {
 			}
 			i = next
 
+		case strings.HasPrefix(line, "<p") && !strings.HasSuffix(line, "</p>"):
+			closeIdx := strings.LastIndex(line, "</p>")
+			if closeIdx < 0 {
+				content, attrs, next, err := c.collectPTag(lines, i, line)
+				if err != nil {
+					return err
+				}
+				i = next
+				if err := c.renderParagraph(content, attrs); err != nil {
+					return err
+				}
+				break
+			}
+			if err := c.parseLine(line); err != nil {
+				return err
+			}
+
+		case strings.HasPrefix(line, "<w:") && !strings.Contains(line, "</w:"):
+			flags, attrs, content, next, err := c.collectWTag(lines, i, line)
+			if err != nil {
+				return err
+			}
+			i = next
+			if err := c.renderWrappedContent(content, flags, attrs); err != nil {
+				return err
+			}
+
 		default:
 			if err := c.parseLine(line); err != nil {
 				return err
@@ -81,10 +108,144 @@ func (c *Compiler) renderBody(body string) error {
 	return nil
 }
 
+func (c *Compiler) collectPTag(lines []string, start int, firstLine string) (string, map[string]string, int, error) {
+	gtIdx := strings.IndexByte(firstLine, '>')
+	if gtIdx < 0 {
+		return "", nil, start, nil
+	}
+	attrs := parseAttrs(tagAttrs(firstLine, gtIdx))
+	var buf strings.Builder
+	after := firstLine[gtIdx+1:]
+	if after != "" {
+		buf.WriteString(after)
+	}
+	i := start
+	for i < len(lines) {
+		tr := strings.TrimSpace(lines[i])
+		i++
+		if strings.HasSuffix(tr, "</p>") {
+			idx := strings.LastIndex(tr, "</p>")
+			if idx > 0 {
+				if buf.Len() > 0 {
+					buf.WriteString("\n")
+				}
+				buf.WriteString(tr[:idx])
+			}
+			break
+		}
+		if buf.Len() > 0 {
+			buf.WriteString("\n")
+		}
+		buf.WriteString(tr)
+	}
+	return strings.TrimSpace(buf.String()), attrs, i, nil
+}
+
+func tagAttrs(tagLine string, gtIdx int) string {
+	spIdx := strings.IndexByte(tagLine, ' ')
+	if spIdx < 0 || spIdx > gtIdx {
+		return ""
+	}
+	return tagLine[spIdx:gtIdx]
+}
+
+func (c *Compiler) collectWTag(lines []string, start int, firstLine string) (string, map[string]string, string, int, error) {
+	gtIdx := strings.IndexByte(firstLine, '>')
+	if gtIdx < 0 {
+		return "", nil, "", start, nil
+	}
+	flags := firstLine[3:gtIdx]
+	if spIdx := strings.IndexByte(flags, ' '); spIdx >= 0 {
+		flags = flags[:spIdx]
+	}
+	attrs := parseAttrs(tagAttrs(firstLine, gtIdx))
+	var buf strings.Builder
+	after := firstLine[gtIdx+1:]
+	if after != "" {
+		buf.WriteString(after)
+	}
+	i := start
+	closeTag := "</w:" + flags + ">"
+	for i < len(lines) {
+		tr := strings.TrimSpace(lines[i])
+		i++
+		if strings.Contains(tr, closeTag) {
+			idx := strings.Index(tr, closeTag)
+			if idx > 0 {
+				if buf.Len() > 0 {
+					buf.WriteString("\n")
+				}
+				buf.WriteString(tr[:idx])
+			}
+			break
+		}
+		if buf.Len() > 0 {
+			buf.WriteString("\n")
+		}
+		buf.WriteString(tr)
+	}
+	return flags, attrs, strings.TrimSpace(buf.String()), i, nil
+}
+
+func (c *Compiler) renderWrappedContent(content, flags string, attrs map[string]string) error {
+	runs := inlineToRuns(content)
+	for _, f := range strings.Split(flags, "|") {
+		switch f {
+		case "c":
+			attrs = mergeAttrs(attrs, map[string]string{"align": "center"})
+		case "r":
+			attrs = mergeAttrs(attrs, map[string]string{"align": "right"})
+		case "j":
+			attrs = mergeAttrs(attrs, map[string]string{"align": "justify"})
+		case "b":
+			for i := range runs {
+				if !runs[i].Bold {
+					runs[i].Bold = true
+				}
+			}
+		case "i":
+			for i := range runs {
+				if !runs[i].Italic {
+					runs[i].Italic = true
+				}
+			}
+		case "u":
+			for i := range runs {
+				if !runs[i].Underline {
+					runs[i].Underline = true
+				}
+				if runs[i].UnderlineStyle == "" && attrs["underline"] != "" {
+					runs[i].UnderlineStyle = attrs["underline"]
+				}
+			}
+		case "s":
+			for i := range runs {
+				if !runs[i].Strike {
+					runs[i].Strike = true
+				}
+			}
+		case "code":
+			for i := range runs {
+				if !runs[i].Code {
+					runs[i].Code = true
+				}
+			}
+		}
+	}
+	return c.r.AddParagraph(runs, attrs)
+}
+
+// For renderWrapped, we need to parse the <w:> tag from the collected content
+// Let me redo this differently
+
 func (c *Compiler) expandLoops(body string) string {
 	return loopRe.ReplaceAllStringFunc(body, func(match string) string {
 		m := loopRe.FindStringSubmatch(match)
-		if len(m) < 7 {
+		if len(m) < 8 {
+			return match
+		}
+		// Validate closing tag variant matches opening variant
+		if m[1] != m[7] {
 			return match
 		}
 		variant := m[1]
@@ -325,12 +486,39 @@ func (c *Compiler) collectRowCells(lines []string, start int) ([]TableCell, int,
 			if gtIdx < 0 {
 				continue
 			}
-			if !strings.HasSuffix(line, "</col>") {
-				continue
+			if strings.HasSuffix(line, "</col>") {
+				attrs := parseAttrs(line[4:gtIdx])
+				text := line[gtIdx+1 : len(line)-6]
+				cells = append(cells, TableCell{Runs: inlineToRuns(text), Attrs: attrs})
+			} else {
+				// Multi-line <col> — collect until </col>
+				firstAttrs := parseAttrs(line[4:gtIdx])
+				var buf strings.Builder
+				after := line[gtIdx+1:]
+				if after != "" {
+					buf.WriteString(after)
+				}
+				i++
+				for i < len(lines) {
+					tr := strings.TrimSpace(lines[i])
+					i++
+					if strings.HasSuffix(tr, "</col>") {
+						idx := strings.LastIndex(tr, "</col>")
+						if idx > 0 {
+							if buf.Len() > 0 {
+								buf.WriteString("\n")
+							}
+							buf.WriteString(tr[:idx])
+						}
+						break
+					}
+					if buf.Len() > 0 {
+						buf.WriteString("\n")
+					}
+					buf.WriteString(tr)
+				}
+				cells = append(cells, TableCell{Runs: inlineToRuns(strings.TrimSpace(buf.String())), Attrs: firstAttrs})
 			}
-			attrs := parseAttrs(line[4:gtIdx])
-			text := line[gtIdx+1 : len(line)-6]
-			cells = append(cells, TableCell{Runs: inlineToRuns(text), Attrs: attrs})
 		}
 	}
 	return cells, len(lines), nil
@@ -365,7 +553,7 @@ func (c *Compiler) parseLine(line string) error {
 	case strings.HasPrefix(line, "<w:"):
 		m := wRe.FindStringSubmatch(line)
 		if len(m) == 5 && m[1] == m[4] {
-			return c.r.AddWrappedParagraph(m[3], m[1], parseAttrs(m[2]))
+			return c.renderWrappedContent(m[3], m[1], parseAttrs(m[2]))
 		}
 
 	case strings.HasPrefix(line, "<img="):
@@ -599,6 +787,21 @@ func splitInline(s string) []inlinePart {
 	}
 
 	return parts
+}
+
+func mergeAttrs(base, over map[string]string) map[string]string {
+	if len(over) == 0 {
+		return base
+	}
+	if base == nil {
+		base = make(map[string]string)
+	}
+	for k, v := range over {
+		if _, ok := base[k]; !ok {
+			base[k] = v
+		}
+	}
+	return base
 }
 
 func parseAttrs(s string) map[string]string {

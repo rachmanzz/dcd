@@ -151,6 +151,14 @@ func (d *DocxRenderer) AddHeading(text string, level int, attrs map[string]strin
 		pPr.Spacing.After = &v
 	}
 
+	if s := chooseAttr(def, style, attrs, "line-height"); s != "" {
+		if pPr.Spacing == nil {
+			pPr.Spacing = &ctypes.Spacing{}
+		}
+		v := int(atof(s) * 240)
+		pPr.Spacing.Line = &v
+	}
+
 		if s := chooseAttr(def, style, attrs, "border-bottom"); s != "" {
 		if pPr.Border == nil {
 			pPr.Border = &ctypes.ParaBorder{}
@@ -524,12 +532,17 @@ func (d *DocxRenderer) AddHyperlink(text, url string, attrs map[string]string) e
 	linkColor := "0055CC"
 	hasUnderline := true
 	if attrs != nil {
-		if c := attrs["color"]; c != "" {
+		c := attrs["font-color"]
+		if c == "" {
+			c = attrs["color"]
+		}
+		if c != "" {
 			linkColor = strings.TrimPrefix(c, "#")
 		}
 		if attrs["underline"] == "false" {
 			hasUnderline = false
 		}
+		_ = attrs["target"] // parsed for completeness; DOCX always opens external links in new window
 	}
 
 	runProp := &ctypes.RunProperty{
@@ -1044,12 +1057,11 @@ func (d *DocxRenderer) SetHeader(props map[string]string) error {
 	if d.root.Document.Body.SectPr == nil {
 		d.root.Document.Body.SectPr = ctypes.NewSectionProper()
 	}
-	hdrType := stypes.HdrFtrDefault
-	if cfg.mirror {
-		hdrType = stypes.HdrFtrEven
-	}
+	// mirror=true would need dual odd/even headers (left↔right swapped on even),
+	// but godocx SectionProp only supports one HeaderReference.
+	// Fallback: show on all pages.
 	d.root.Document.Body.SectPr.HeaderReference = &ctypes.HeaderReference{
-		Type: hdrType,
+		Type: stypes.HdrFtrDefault,
 		ID:   d.headerRID,
 	}
 
@@ -1097,12 +1109,8 @@ func (d *DocxRenderer) SetFooter(props map[string]string) error {
 	if d.root.Document.Body.SectPr == nil {
 		d.root.Document.Body.SectPr = ctypes.NewSectionProper()
 	}
-	ftrType := stypes.HdrFtrDefault
-	if cfg.mirror {
-		ftrType = stypes.HdrFtrEven
-	}
 	d.root.Document.Body.SectPr.FooterReference = &ctypes.FooterReference{
-		Type: ftrType,
+		Type: stypes.HdrFtrDefault,
 		ID:   d.footerRID,
 	}
 
