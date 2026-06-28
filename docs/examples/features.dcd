@@ -9,14 +9,14 @@ font-size=11
 title=DCD Feature Showcase
 
 [header]
-left=Features Demo
-right={{date}}
+justify_between=DCD Demo, {{date}}
 font-size=8
 color=#888888
 
 [footer]
 left={{title}}
 right=Page {{page}}
+justify_between=DCD Demo, {{date}}, 1
 font-size=8
 color=#888888
 

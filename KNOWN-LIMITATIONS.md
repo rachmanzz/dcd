@@ -67,6 +67,7 @@ This document maps each feature to its implementation layer in the `gomutex/godo
 | Outline numbering (1, 1.1, 1.1.1) | `w:abstractNum`/`w:num`/`w:lvl` have no Go structs. Library provides `Paragraph.Numbering(id, level)` to _apply_ numbering, but no API to _create_ numbering definitions. | Library patch: numbering definition builder OR raw XML injection into `numbering.xml` |
 | `<hr thick=N>` | `ctypes.Border` struct missing `Sz` (border width) field. `MarshalXML` doesn't emit `w:sz`. | Library patch: add `Sz *uint64` to `Border` struct |
 | Header/footer odd+even separately | `SectionProp` has only one `HeaderReference`/`FooterReference` slot. Can only use `HdrFtrEven` **instead of** `HdrFtrDefault`, not both. | Library patch: support multiple references |
+| Hyperlink (`<a=>`) clickable | `ctypes.Hyperlink` struct `Children` field has no XML tag — Go default encoder wraps in `<Children><ParagraphChild>...`. Valid OOXML needs `<w:r>` directly inside `<w:hyperlink>`. | Library patch: add `Hyperlink.MarshalXML` that serializes children as raw `<w:r>` elements |
 
 ### Why Not Raw XML Injection?
 

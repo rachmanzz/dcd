@@ -730,6 +730,8 @@ Inline:
 | `color`     | `#0055cc`       | Link color           |
 | `underline` | `true`          | Underline            |
 
+> **Limitation:** Hyperlinks render as blue underlined text but are **not clickable** in the DOCX output. The `godocx v0.1.5` library's `Hyperlink` struct lacks proper OOXML serialization (`<Children>` wrapper instead of raw `<w:r>`), which Word ignores. This affects all `<a=>` usage (inline and standalone). See [`KNOWN-LIMITATIONS.md`](/KNOWN-LIMITATIONS.md) for details.
+
 ### Bookmark
 
 ```
