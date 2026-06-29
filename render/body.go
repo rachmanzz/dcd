@@ -249,9 +249,9 @@ func (c *Compiler) expandLoops(body string) string {
 			return match
 		}
 		variant := m[1]
-		styleFirst := m[2]  // style.first before varName
+		styleFirst := m[2] // style.first before varName
 		if styleFirst == "" {
-			styleFirst = m[5]  // style.first after sourceName
+			styleFirst = m[5] // style.first after sourceName
 		}
 		varName := m[3]
 		sourceName := m[4]

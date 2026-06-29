@@ -159,7 +159,7 @@ func (d *DocxRenderer) AddHeading(text string, level int, attrs map[string]strin
 		pPr.Spacing.Line = &v
 	}
 
-		if s := chooseAttr(def, style, attrs, "border-bottom"); s != "" {
+	if s := chooseAttr(def, style, attrs, "border-bottom"); s != "" {
 		if pPr.Border == nil {
 			pPr.Border = &ctypes.ParaBorder{}
 		}

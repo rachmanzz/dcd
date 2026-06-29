@@ -134,7 +134,7 @@ func (c *Compiler) renderSection(sec parse.Section) error {
 	body = c.resolveSectionBuiltins(body)
 	body = c.applyFormats(body, sec.Props["formats"])
 	body = c.ds.Resolve(body)
-	body = resolveRowStyles(body)  // Resolve style={{var}} after variable resolution
+	body = resolveRowStyles(body) // Resolve style={{var}} after variable resolution
 	if body == "" {
 		return nil
 	}

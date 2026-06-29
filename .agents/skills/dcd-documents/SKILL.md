@@ -158,7 +158,7 @@ keys=title, message
 | `keys`       | Comma-separated field names for data variable resolution. For primary var: field names. For array fields: `source.field` (e.g. `items.date_field`). Optional — sections without `var`/`keys` pass `{{...}}` through as literals. |
 | `formats`    | Per-key format: `[key:format]` or `[source.field:format]`. Defines the output format of a key. The key (or dotted path) must be listed in `keys`. For array fields in loops, use `[source.field:format]` (e.g. `[items.date_field:dd-MM-yyyy`). |
 
-> Properties use `=` separator (e.g. `name=example`). The parser also accepts `:` (e.g. `name:example`).
+> Properties use `=` separator (e.g. `name=example`).
 
 ### Var Usage
 

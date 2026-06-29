@@ -55,14 +55,11 @@ func Parse(path string) (*Doc, error) {
 			case inBody && cur != nil:
 				doc.Sections[len(doc.Sections)-1].Body += line + "\n"
 
-		case cur != nil:
-			if k, v, ok := strings.Cut(trimmed, "="); ok {
-				k = normalizePropertyKey(strings.TrimSpace(k))
-				doc.Sections[len(doc.Sections)-1].Props[k] = strings.TrimSpace(v)
-			} else if k, v, ok := strings.Cut(trimmed, ":"); ok {
-				k = normalizePropertyKey(strings.TrimSpace(k))
-				doc.Sections[len(doc.Sections)-1].Props[k] = strings.TrimSpace(v)
-			}
+			case cur != nil:
+				if k, v, ok := strings.Cut(trimmed, "="); ok {
+					k = normalizePropertyKey(strings.TrimSpace(k))
+					doc.Sections[len(doc.Sections)-1].Props[k] = strings.TrimSpace(v)
+				}
 			}
 		}
 	}
@@ -89,5 +86,3 @@ func parseSectionN(name string) int {
 	}
 	return 0
 }
-
-
