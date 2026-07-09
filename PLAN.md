@@ -16,6 +16,11 @@
 | Strike in `addListAtDepth` | ✅ | `docx.go` |
 | Keep-next / Keep-lines in heading | ✅ | `docx.go` |
 | Header/footer mirror (`HdrFtrEven` type) | ✅ | `docx.go` |
+| `[]` prefix array in `var=` — compiler validation | ✅ | `compiler.go` |
+| CONDITIONAL DOT-NOTATION RULE — dotted key in `keys=` must have `formats=` | ✅ | `compiler.go` |
+| EXCLUSIVE REGISTRATION RULE — format key must be in `keys=` | ✅ | `compiler.go` |
+| SKILL.md synced with dcdmaker 4.A rules | ✅ | `SKILL.md` |
+| `loopSourceRe` / `objectVarRe` regex for var validation | ✅ | `body.go` |
 
 ---
 
@@ -181,6 +186,42 @@ if run.Strike {
 | 7 | Table column width | — | ❌ Beyond lib scope |
 | 8 | Outline numbering | — | ❌ Beyond lib scope |
 | 9 | `<hr>` thickness | — | ❌ Beyond lib scope |
+| 10 | `[]` prefix enforcement in `var=` | Small | ✅ Done |
+| 11 | CONDITIONAL DOT-NOTATION RULE (dotted key → format) | Small | ✅ Done |
+| 12 | SKILL.md sync with dcdmaker 4.A | Small | ✅ Done |
+
+---
+
+## dcdmaker 4.A Sync: `[]` Prefix & Dot-Notation Rules
+
+**Status:** ✅ Done
+
+**Why:** dcdmaker's SKILL.md defines 3 rules for `var=`/`keys=`/`formats=` that our compiler was not enforcing:
+1. `[]` prefix arrays in `var=` — distinguishes objects from arrays
+2. CONDITIONAL DOT-NOTATION RULE — dotted paths in `keys=` must have `formats=`
+3. EXCLUSIVE REGISTRATION RULE — format keys must be declared in `keys=` (#3 already existed)
+
+**Changes:**
+- `render/compiler.go` — Added `parseVarDecl()` helper and `varEntry` struct
+- `render/compiler.go` — Updated `validateSectionProps` with 5 validations:
+  1. Array (`[]`) used as `{{name.key}}` → error
+  2. Object (without `[]`) used as loop source → error
+  3. Loop source not declared in `var=` → error
+  4. `[]` array declared but never used → error
+  5. Dotted key in `keys=` without `formats=` → error
+- `render/body.go` — Added `loopSourceRe` and `objectVarRe` regex
+
+**Validation rules:**
+
+| Check | Error |
+|-------|-------|
+| Array `[]` used as `{{name.key}}` | `array var "X" declared with [] used as object prefix` |
+| Object used as loop source | `object var "X" (without []) used as loop source` |
+| Loop source not in `var=` | `loop source "X" not declared in var=` |
+| Array declared but never used | `array var "X" declared with [] but never used as loop source` |
+| Dotted key in `keys=` without format | `dotted key "X" in keys= must have corresponding format` |
+
+**Effort:** Small (1 afternoon).
 
 ---
 
