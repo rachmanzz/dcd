@@ -154,25 +154,25 @@ keys=title, message
 | Property   | Description                            |
 |------------|----------------------------------------|
 | `name`       | Section identifier                     |
-| `var`        | Comma-separated variable names, each is an **object/map/object-in-array (array)**. Pattern: `var=nameA, nameB, ...` — **first** `nameA` is prefix for `{{nameA.key}}` via `keys`. **Subsequent** `nameB` are data source names used by `<loop x from nameB>`. |
-| `keys`       | Comma-separated field names for data variable resolution. For primary var: field names. For array fields: `source.field` (e.g. `items.date_field`). Optional — sections without `var`/`keys` pass `{{...}}` through as literals. |
-| `formats`    | Per-key format: `[key:format]` or `[source.field:format]`. Defines the output format of a key. The key (or dotted path) must be listed in `keys`. For array fields in loops, use `[source.field:format]` (e.g. `[items.date_field:dd-MM-yyyy`). |
+| `var`        | Comma-separated variable names. **Objects:** plain name (e.g. `info`). **Arrays (loop sources):** prefix with `[]` (e.g. `[]entries`). Pattern: `var=info, []entries` — **first** `info` is prefix for `{{info.key}}` via `keys`. **Subsequent** `[]entries` is a data source for `<loop x from entries>`. |
+| `keys`       | Comma-separated field names for data variable resolution. For primary var: field names. For array fields requiring formatting: `source.field` (e.g. `items.date_field`). **CONDITIONAL DOT-NOTATION RULE:** Dotted paths (object/array fields) MUST NOT be registered in `keys=` UNLESS they are explicitly formatted in `formats=`. Optional — sections without `var`/`keys` pass `{{...}}` through as literals. |
+| `formats`    | Per-key format: `[key:format]` or `[source.field:format]`. Defines the output format of a key. **EXCLUSIVE REGISTRATION RULE:** Any key or dotted path targeted in `formats=` MUST be explicitly listed in `keys=`. For array fields in loops, use `[source.field:format]` (e.g. `[items.date_field:dd-MM-yyyy`). |
 
 > Properties use `=` separator (e.g. `name=example`).
 
 ### Var Usage
 
 ```
-var=info, entries
+var=info, []entries
 ```
 
-| Position | Name       | Source of data           | Access in body                      |
-|----------|------------|--------------------------|-------------------------------------|
-| 1st      | `info`     | Resolved via `keys`      | `{{info.username}}`                 |
-| 2nd+     | `entries`  | Array data source        | `<loop x from entries>{{x.name}}</loop>` |
+| Position | Name         | Source of data           | Access in body                                |
+|----------|--------------|--------------------------|-----------------------------------------------|
+| 1st      | `info`       | Resolved via `keys`      | `{{info.username}}`                           |
+| 2nd+     | `[]entries`  | Array data source        | `<loop x from entries>{{x.name}}</loop>`      |
 
 - **First name** (`info`): variable prefix. Fields listed in `keys`. Accessed as `{{info.key}}`.
-- **Additional names** (`entries`, ...): data sources for loops. Accessed via `<loop x from entries>`, then `{{x.field}}` per item.
+- **Additional names** (`[]entries`, ...): data sources for loops. Accessed via `<loop x from entries>`, then `{{x.field}}` per item.
 
 ### Variables
 
@@ -201,11 +201,11 @@ Besides the specifiers above, format also supports regex patterns like `\d`, `\w
 
 ### Format for Array Fields
 
-For fields inside array objects (used in `<loop x from source>`), use **dotted path** in both `formats` and `keys`:
+For fields inside array objects (used in `<loop x from source>`) that need formatting, use **dotted path** in both `keys` and `formats`. Fields that do NOT need formatting must NOT appear in `keys=`:
 
 ```ini
 [section 0]
-var=info, items
+var=info, []items
 keys=title, items.date_field
 formats=[items.date_field:dd-MM-yyyy]
 
@@ -646,7 +646,7 @@ Renders as `<ul><li>value</li><li>value</li></ul>`.
 ```
 [section 0]
 name=products
-var=info, items
+var=info, []items
 keys=title, items.date, items.price
 formats=[items.date:dd-MM-yyyy], [items.price:#,##0.00]
 

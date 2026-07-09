@@ -181,3 +181,34 @@ if run.Strike {
 | 7 | Table column width | — | ❌ Beyond lib scope |
 | 8 | Outline numbering | — | ❌ Beyond lib scope |
 | 9 | `<hr>` thickness | — | ❌ Beyond lib scope |
+
+---
+
+## Sync dcdmaker Rules — Validation & Documentation Gaps
+
+### Status
+
+| # | Item | SKILL.md | Compiler | Priority |
+|---|------|----------|----------|----------|
+| 1 | Built-in vars `{{page}}`, `{{total}}` | 🔴 Missing | 🔴 Not resolved (template literal) | High |
+| 2 | `<ol type=a/A/i/I>` | 🔴 Missing | ⚠️ Need check parser regex | Medium |
+| 3 | Loop action before attributes | 🔴 Missing | ✅ Parser accepts both orders | Low |
+| 4 | List Loop Prohibition | 🔴 Missing | ✅ Parse error anyway | Low |
+| 5 | Section limits (3 var, 15 keys) | 🔴 Missing | ❌ Not enforced | Low |
+| 6 | Strict Usage (var/key must be used) | 🔴 Missing | ❌ Not enforced | High |
+| 7 | `<w:*>` nesting prohibition | 🔴 Missing | ⚠️ Parser accepts nested | Medium |
+| 8 | Heading nesting prohibition | 🔴 Missing | ⚠️ Parser accepts nested | Medium |
+| 9 | Tag balancing global | 🔴 Missing | ❌ Not validated | Low |
+| 10 | Section `name=` required | 🔴 Missing | ❌ Not enforced | High |
+
+### Planned Changes
+
+**SKILL.md only (no compiler change):**
+- #1: Add `{{page}}`, `{{total}}` to built-in vars table
+- #2: Add `<ol type=a>` note or "not supported"
+- #3, #4, #7, #8, #9: Add documentation rules
+
+**Compiler enforcement:**
+- #5: Section limits (warning level, not error)
+- #6: Strict Usage — validate each var/key appears in body
+- #10: Section `name=` required — error if missing
