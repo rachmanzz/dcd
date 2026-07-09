@@ -235,7 +235,7 @@ if run.Strike {
 | 2 | `<ol type=a/A/i/I>` | 🔴 Missing | ⚠️ Need check parser regex | Medium |
 | 3 | Loop action before attributes | 🔴 Missing | ✅ Parser accepts both orders | Low |
 | 4 | List Loop Prohibition | 🔴 Missing | ✅ Parse error anyway | Low |
-| 5 | Section limits (3 var, 15 keys) | 🔴 Missing | ❌ Not enforced | Low |
+| 5 | Section limits (5 var, 15 keys) | 🔴 Missing | ❌ Not enforced | Low |
 | 6 | Strict Usage (var/key must be used) | 🔴 Missing | ❌ Not enforced | High |
 | 7 | `<w:*>` nesting prohibition | 🔴 Missing | ⚠️ Parser accepts nested | Medium |
 | 8 | Heading nesting prohibition | 🔴 Missing | ⚠️ Parser accepts nested | Medium |

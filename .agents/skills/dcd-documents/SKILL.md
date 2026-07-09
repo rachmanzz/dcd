@@ -153,7 +153,7 @@ keys=title, message
 
 | Property   | Description                            |
 |------------|----------------------------------------|
-| `name`       | Section identifier                     |
+| `name`       | Section identifier — **REQUIRED** in every `[section N]`. Must be declared before `var=` and `keys=`. |
 | `var`        | Comma-separated variable names. **Objects:** plain name (e.g. `info`). **Arrays (loop sources):** prefix with `[]` (e.g. `[]entries`). Pattern: `var=info, []entries` — **first** `info` is prefix for `{{info.key}}` via `keys`. **Subsequent** `[]entries` is a data source for `<loop x from entries>`. |
 | `keys`       | Comma-separated field names for data variable resolution. For primary var: field names. For array fields requiring formatting: `source.field` (e.g. `items.date_field`). **CONDITIONAL DOT-NOTATION RULE:** Dotted paths (object/array fields) MUST NOT be registered in `keys=` UNLESS they are explicitly formatted in `formats=`. Optional — sections without `var`/`keys` pass `{{...}}` through as literals. |
 | `formats`    | Per-key format: `[key:format]` or `[source.field:format]`. Defines the output format of a key. **EXCLUSIVE REGISTRATION RULE:** Any key or dotted path targeted in `formats=` MUST be explicitly listed in `keys=`. For array fields in loops, use `[source.field:format]` (e.g. `[items.date_field:dd-MM-yyyy`). |
@@ -161,6 +161,9 @@ keys=title, message
 > Properties use `=` separator (e.g. `name=example`).
 
 ### Var Usage
+
+- **Section Limits:** Aim for ≤ 5 `var` entries and ≤ 15 `keys` entries per section.
+- **Splitting Rule:** If you exceed these limits, split into a new logical section (e.g. `[section 1]`, `[section 2]`).
 
 ```
 var=info, []entries
@@ -181,6 +184,8 @@ var=info, []entries
 Built-in variables (resolved automatically, no registration needed):
 - `{{date}}` — current compilation date
 - `{{title}}` — document title (from `[title]` section)
+- `{{page}}` — page number (works in header/footer; passed as literal in body)
+- `{{total}}` — total pages (works in header/footer; passed as literal in body)
 
 ### Format Specifiers
 
@@ -220,13 +225,19 @@ After loop expansion, `{{x.date_field}}` becomes `{{items.0.date_field}}` — th
 
 ### Variable Registration Rule
 
-`{{...}}` variables that reference data fields should be registered in:
+`{{...}}` variables that reference data fields must be registered in:
 - **`keys`** — field names or dotted paths
 - **`var`** — data source names
 
-Sections without `var` or `keys` are allowed: unresolvable `{{...}}` variables pass through as **literal strings** (e.g. `{{unknown}}` appears as-is). Built-in variables (`{{date}}`, `{{title}}`) are resolved automatically regardless of registration.
+**Strict Usage:** Every variable in `var=` and every key in `keys=` MUST be used at least once in `--- BODY ---`. Do NOT declare unused variables or keys.
+
+Sections without `var` or `keys` are allowed: unresolvable `{{...}}` variables pass through as **literal strings** (e.g. `{{unknown}}` appears as-is). Built-in variables (`{{date}}`, `{{title}}`, `{{page}}`, `{{total}}`) are resolved automatically regardless of registration.
 
 ### Block Tags (outside `<p>`)
+
+> **TAG BALANCING:** Every opened tag must be closed exactly. `<loop:ol>` MUST close with `</loop:ol>`, NOT `</loop>`.
+>
+> **STRICT NESTING RULE:** `<w:*>` tags MUST contain ONLY pure text and `{{vars}}`. Nested tags (e.g. `<b>`, `<i>`) are STRICTLY FORBIDDEN inside `<w:*>`.
 
 | Tag                              | Description                     |
 |----------------------------------|---------------------------------|
@@ -302,6 +313,8 @@ Block `<w:>` tags also accept attributes for additional formatting:
 ## 3. Headings
 
 Heading `<h1>`–`<h6>` with global style in `[style:heading-N]`.
+
+**RESTRICTION:** `<h1>` through `<h6>` MUST contain ONLY plain text and `{{vars}}`. Nested tags (`<b>`, `<i>`, `<u>`, `<code>`, etc.) are STRICTLY FORBIDDEN inside headings.
 
 ```
 [style]
@@ -534,11 +547,13 @@ Nested:
 
 ### Tags
 
-| Tag       | Description              |
-|-----------|--------------------------|
-| `<ol>`    | Ordered list             |
-| `<ul>`    | Unordered list           |
-| `<li>`    | List item                |
+| Tag       | Description                                    |
+|-----------|------------------------------------------------|
+| `<ol>`    | Ordered list (supports `type=a/A/1/i/I`)       |
+| `<ul>`    | Unordered list                                 |
+| `<li>`    | List item                                      |
+
+Supported `type` values for `<ol>`: `1` (default, numbers), `a` (lowercase letters), `A` (uppercase letters), `i` (lowercase roman), `I` (uppercase roman).
 
 ### Horizontal Rule
 
@@ -564,12 +579,20 @@ Properties:
 
 Iterate over array data sources declared in `var`.
 
-The data source name must be listed in `var` (after the first name). See [Var Usage](#var-usage).
+The data source name must be listed with `[]` prefix in `var=`. See [Var Usage](#var-usage).
+
+### Critical Loop Constraints
+
+1. **Strict Syntax Order:** The iteration action (`x from source`) MUST come BEFORE any attributes (`type=...`). `<loop:ol x from items type=A>` ✅, `<loop:ol type=A x from items>` ❌.
+2. **Source Matching:** The array source MUST be listed with a `[]` prefix in `var=`.
+3. **Variable Access:** Inside the loop, access fields using the alias (e.g. `{{x.field}}`).
+4. **Closing Tag Rule:** The closing tag MUST EXACTLY MATCH the opening variant prefix, but MUST OMIT the action and attributes. Opening: `<loop:ol x from items type=A>` ➔ Closing: `</loop:ol>` (NOT `</loop>` and NOT `</loop:ol type=A>`).
+5. **List Loop Prohibition:** NEVER wrap a standard `<loop>` inside static `<ol>` or `<ul>` tags. Use the native `<loop:ol>` or `<loop:ul>` tags instead.
 
 ```
 [section 0]
 name=example
-var=info, entries
+var=info, []entries
 keys=title
 
 --- BODY ---
@@ -578,18 +601,18 @@ keys=title
 </loop>
 ```
 
-Here `entries` is the 2nd name in `var=info, entries` — an array data source for the loop.
+Here `entries` is an array source declared as `[]entries` in `var=info, []entries`.
 
 ### Tags
 
-| Tag                                    | Description                            |
-|----------------------------------------|----------------------------------------|
-| `<loop x from name>...</loop>`         | Iterate array `name`, each item as `x` |
-| `<loop:ol x from name>...</loop:ol>`   | Iterate + wrap each in `<ol><li>`      |
-| `<loop:ul x from name>...</loop:ul>`   | Iterate + wrap each in `<ul><li>`      |
-| `<loop:row x from name>...</loop:row>` | Iterate into table rows                |
+| Tag                                              | Description                            |
+|--------------------------------------------------|----------------------------------------|
+| `<loop x from name>...</loop>`                   | Iterate array `name`, each item as `x` |
+| `<loop:ol x from name type=1>...</loop:ol>`      | Iterate + wrap `<ol><li>`              |
+| `<loop:ul x from name>...</loop:ul>`             | Iterate + wrap `<ul><li>`              |
+| `<loop:row x from name>...</loop:row>`           | Iterate into table rows                |
 
-> Closing tag must match the opening variant: `<loop:ol>` closes with `</loop:ol>`, `<loop:row>` with `</loop:row>`, etc.
+> Closing tag MUST EXACTLY MATCH the opening variant: `<loop:ol>` closes with `</loop:ol>` (NOT `</loop>`).
 
 ### Basic Loop
 
@@ -600,18 +623,18 @@ Here `entries` is the 2nd name in `var=info, entries` — an array data source f
 ```
 
 - `x` — loop variable alias (any name)
-- `entries` — must match a name in `var` (2nd position or later)
+- `entries` — must match a name with `[]` prefix in `var=` (e.g. `var=info, []entries`)
 - Inside: `{{x.field}}` accesses a field on each array element
 
 ### Loop with Ordered List
 
 ```
-<loop:ol x from items>
+<loop:ol x from items type=A>
   {{x.label}}
 </loop:ol>
 ```
 
-Renders as `<ol><li>value</li><li>value</li></ol>`.
+Renders as `<ol type=A><li>value</li><li>value</li></ol>`. Default `type` is `1` (numeric). Supported: `1`, `a`, `A`, `i`, `I`.
 
 ### Loop with Unordered List
 
