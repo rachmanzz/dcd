@@ -286,7 +286,7 @@ type Renderer interface {
     AddHeading(text string, level int, attrs map[string]string) error
     AddParagraph(runs []TextRun) error
     AddTable(rows []TableRow, attrs map[string]string) error
-    AddList(items []ListItem, ordered bool) error
+    AddList(items []ListItem, ordered bool, numFmt string) error
     AddImage(src string, attrs map[string]string) error
     AddLineBreak() error
     AddPageBreak() error

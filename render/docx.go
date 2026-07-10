@@ -23,6 +23,7 @@ type DocxRenderer struct {
 	docTitle      string
 	pageWidthMm   float64
 	unit          string
+	numFmtInited  bool
 }
 
 func NewDocxRenderer() *DocxRenderer {
@@ -427,6 +428,28 @@ func (d *DocxRenderer) AddPageBreak() error {
 	return nil
 }
 
+func (d *DocxRenderer) AddSectionBreak(sectionType string) error {
+	if d.root == nil {
+		if err := d.init(); err != nil {
+			return err
+		}
+	}
+	if d.root.Document.Body.SectPr == nil {
+		d.root.Document.Body.SectPr = ctypes.NewSectionProper()
+	}
+	switch sectionType {
+	case "continuous":
+		d.root.Document.Body.SectPr.Type = ctypes.NewGenSingleStrVal(stypes.SectionMarkNextContinuous)
+	case "next-page":
+		d.root.Document.Body.SectPr.Type = ctypes.NewGenSingleStrVal(stypes.SectionMarkNextPage)
+	case "even-page":
+		d.root.Document.Body.SectPr.Type = ctypes.NewGenSingleStrVal(stypes.SectionMarkEvenPage)
+	case "odd-page":
+		d.root.Document.Body.SectPr.Type = ctypes.NewGenSingleStrVal(stypes.SectionMarkOddPage)
+	}
+	return nil
+}
+
 func (d *DocxRenderer) AddImage(src string, attrs map[string]string) error {
 	if d.root == nil {
 		if err := d.init(); err != nil {
@@ -575,32 +598,54 @@ func (d *DocxRenderer) AddHyperlink(text, url string, attrs map[string]string) e
 	return nil
 }
 
-func (d *DocxRenderer) AddList(items []ListItem, ordered bool) error {
-	return d.addListAtDepth(items, ordered, 0)
+func (d *DocxRenderer) AddList(items []ListItem, ordered bool, numFmt string) error {
+	return d.addListAtDepth(items, ordered, numFmt, 0)
 }
 
-func (d *DocxRenderer) addListAtDepth(items []ListItem, ordered bool, depth int) error {
+func (d *DocxRenderer) addListAtDepth(items []ListItem, ordered bool, numFmt string, depth int) error {
 	if d.root == nil {
 		if err := d.init(); err != nil {
 			return err
 		}
 	}
 	var style, numID string
-	switch {
-	case ordered && depth == 0:
-		style, numID = "ListNumber", "5"
-	case ordered && depth == 1:
-		style, numID = "ListNumber2", "6"
-	case ordered && depth == 2:
-		style, numID = "ListNumber3", "7"
-	case !ordered && depth == 0:
-		style, numID = "ListBullet", "1"
-	case !ordered && depth == 1:
-		style, numID = "ListBullet2", "2"
-	case !ordered && depth == 2:
-		style, numID = "ListBullet3", "3"
-	default:
-		style, numID = "ListParagraph", "1"
+	if ordered && numFmt != "" {
+		if !d.numFmtInited {
+			if err := d.injectNumFmts(); err != nil {
+				return err
+			}
+		}
+		baseID := numFmtBaseID(numFmt)
+		if baseID > 0 {
+			numID = strconv.Itoa(baseID + depth)
+		}
+		switch depth {
+		case 0:
+			style = "ListNumber"
+		case 1:
+			style = "ListNumber2"
+		case 2:
+			style = "ListNumber3"
+		default:
+			style = "ListParagraph"
+		}
+	} else {
+		switch {
+		case ordered && depth == 0:
+			style, numID = "ListNumber", "5"
+		case ordered && depth == 1:
+			style, numID = "ListNumber2", "6"
+		case ordered && depth == 2:
+			style, numID = "ListNumber3", "7"
+		case !ordered && depth == 0:
+			style, numID = "ListBullet", "1"
+		case !ordered && depth == 1:
+			style, numID = "ListBullet2", "2"
+		case !ordered && depth == 2:
+			style, numID = "ListBullet3", "3"
+		default:
+			style, numID = "ListParagraph", "1"
+		}
 	}
 	for _, item := range items {
 		if len(item.Runs) > 0 {
@@ -687,7 +732,7 @@ func (d *DocxRenderer) addListAtDepth(items []ListItem, ordered bool, depth int)
 			}
 		}
 		if len(item.Items) > 0 {
-			if err := d.addListAtDepth(item.Items, item.Ordered, depth+1); err != nil {
+			if err := d.addListAtDepth(item.Items, item.Ordered, item.NumFormat, depth+1); err != nil {
 				return err
 			}
 		}
@@ -1425,3 +1470,87 @@ func (d *DocxRenderer) Save(path string) error {
 }
 
 func intPtr(n int) *int { return &n }
+
+func numFmtBaseID(fmt string) int {
+	switch fmt {
+	case "A":
+		return 10
+	case "a":
+		return 13
+	case "I":
+		return 16
+	case "i":
+		return 19
+	default:
+		return 0
+	}
+}
+
+func numFmtName(fmt string) string {
+	switch fmt {
+	case "A":
+		return "upperLetter"
+	case "a":
+		return "lowerLetter"
+	case "I":
+		return "upperRoman"
+	case "i":
+		return "lowerRoman"
+	default:
+		return "decimal"
+	}
+}
+
+func (d *DocxRenderer) injectNumFmts() error {
+	if d.numFmtInited {
+		return nil
+	}
+	raw, ok := d.root.FileMap.Load("word/numbering.xml")
+	if !ok {
+		return nil
+	}
+	content := string(raw.([]byte))
+	endTag := "</w:numbering>"
+	idx := strings.LastIndex(content, endTag)
+	if idx < 0 {
+		return nil
+	}
+
+	indents := []string{"360", "720", "1080"}
+	formats := []struct {
+		name string
+		base int
+	}{
+		{"upperLetter", 10},
+		{"lowerLetter", 13},
+		{"upperRoman", 16},
+		{"lowerRoman", 19},
+	}
+	var sb strings.Builder
+	for _, f := range formats {
+		for d := 0; d < 3; d++ {
+			absID := f.base + d
+			numID := f.base + d
+			sb.WriteString(fmt.Sprintf(`
+  <w:abstractNum w:abstractNumId="%d">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="%s"/>
+      <w:lvlText w:val="%%1."/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr>
+        <w:ind w:left="%s" w:hanging="360"/>
+      </w:pPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="%d">
+    <w:abstractNumId w:val="%d"/>
+  </w:num>`, absID, f.name, indents[d], numID, absID))
+		}
+	}
+	content = content[:idx] + sb.String() + "\n" + content[idx:]
+	d.root.FileMap.Store("word/numbering.xml", []byte(content))
+	d.numFmtInited = true
+	return nil
+}

@@ -123,9 +123,16 @@ func (c *Compiler) renderSection(sec parse.Section) error {
 		return fmt.Errorf("section %q: %w", sec.Name, err)
 	}
 
-	// Insert page break for section:next-page
-	if strings.HasPrefix(sec.Name, "section:next-page") {
+	switch {
+	case strings.HasPrefix(sec.Name, "section:next-page"):
 		if err := c.r.AddPageBreak(); err != nil {
+			return err
+		}
+		if err := c.r.AddSectionBreak("next-page"); err != nil {
+			return err
+		}
+	case strings.HasPrefix(sec.Name, "section:continuous"):
+		if err := c.r.AddSectionBreak("continuous"); err != nil {
 			return err
 		}
 	}
@@ -170,6 +177,11 @@ func (c *Compiler) validateSectionProps(sec parse.Section) error {
 		return nil
 	}
 
+	// Check 10: name= is REQUIRED
+	if sec.Props["name"] == "" {
+		return fmt.Errorf("name= is required in section %q", name)
+	}
+
 	hasVar := sec.Props["var"] != ""
 	hasKeys := false
 	for k := range sec.Props {
@@ -180,12 +192,16 @@ func (c *Compiler) validateSectionProps(sec parse.Section) error {
 	}
 
 	if !hasVar && !hasKeys {
-		// No var/keys — variables pass through as literals (e.g. {{title}} resolved by resolveBuiltins)
 		return nil
 	}
 
 	if hasVar {
 		vars := parseVarDecl(sec.Props["var"])
+
+		// Check 5: Section limits — warning only
+		if len(vars) > 5 {
+			fmt.Printf("warning: section %q has %d var entries (max 5)\n", sec.Name, len(vars))
+		}
 
 		// Collect array names and object names from var=
 		arrayNames := make(map[string]bool)
@@ -241,10 +257,32 @@ func (c *Compiler) validateSectionProps(sec parse.Section) error {
 				}
 			}
 		}
+
+		// Check 6: Strict Usage — object vars must appear as {{name.key}}
+		for _, v := range vars {
+			if !v.IsArray {
+				matched := false
+				for _, m := range objectVarRe.FindAllStringSubmatch(sec.Body, -1) {
+					if len(m) >= 2 && m[1] == v.Name {
+						matched = true
+						break
+					}
+				}
+				if !matched {
+					return fmt.Errorf("object var %q declared but never used as {{%s.key}} in body", v.Name, v.Name)
+				}
+			}
+		}
 	}
 
-	// Check 5: CONDITIONAL DOT-NOTATION RULE — dotted paths in keys= must have format
-	for _, k := range strings.Split(sec.Props["keys"], ",") {
+	// Check 5: Section limits — keys warning
+	keyList := strings.Split(sec.Props["keys"], ",")
+	if len(keyList) > 15 {
+		fmt.Printf("warning: section %q has %d keys entries (max 15)\n", sec.Name, len(keyList))
+	}
+
+	// Check 5a (CONDITIONAL DOT-NOTATION): dotted paths in keys= must have format
+	for _, k := range keyList {
 		k = strings.TrimSpace(k)
 		if k != "" && strings.Contains(k, ".") {
 			fmts := sec.Props["formats"]
@@ -257,7 +295,7 @@ func (c *Compiler) validateSectionProps(sec parse.Section) error {
 	if fmts := sec.Props["formats"]; fmts != "" {
 		fmtMap := parseFormats(fmts)
 		keySet := make(map[string]bool)
-		for _, k := range strings.Split(sec.Props["keys"], ",") {
+		for _, k := range keyList {
 			keySet[strings.TrimSpace(k)] = true
 		}
 		for key := range fmtMap {

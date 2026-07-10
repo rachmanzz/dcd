@@ -13,8 +13,8 @@ var (
 	wRe           = regexp.MustCompile(`^<w:([^\s>]+)(\s+[^>]*)?>(.*)</w:([^\s>]+)>$`)
 	imgRe         = regexp.MustCompile(`^<img=(\S+)\s*(.*?)>$`)
 	linkRe        = regexp.MustCompile(`<a=(\S+?)(\s+[^>]*)?>([^<]+)</a>`)
-	loopRe        = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+style\.first=(\w+))?>(.*?)</loop(?::(\w+))?>`)
-	loopSourceRe  = regexp.MustCompile(`<loop(?::\w+)?\s+\w+\s+from\s+([\w.]+)`)
+	loopRe        = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+type=(\w+))?(?:\s+style\.first=(\w+))?>(.*?)</loop(?::(\w+))?>`)
+	loopSourceRe  = regexp.MustCompile(`<loop(?::\w+)?\s+\w+\s+from\s+([\w.]+)(?:\s+type=(\w+))?`)
 	objectVarRe   = regexp.MustCompile(`\{\{(\w+)\.`)
 	bRe         = regexp.MustCompile(`<b>(.*?)</b>`)
 	iRe         = regexp.MustCompile(`<i>(.*?)</i>`)
@@ -24,11 +24,11 @@ var (
 	markRe      = regexp.MustCompile(`<mark(?:\s+color=(\S+))?>(.*?)</mark>`)
 	subRe       = regexp.MustCompile(`<sub>(.*?)</sub>`)
 	supRe       = regexp.MustCompile(`<sup>(.*?)</sup>`)
-	setRe       = regexp.MustCompile(`<set:([^\s>]+)(\s+[^>]+)?>(.*?)</set:([^>]+)>`)
-	brRe        = regexp.MustCompile(`^<br>$`)
+	setRe       = regexp.MustCompile(`<set:([^\s>]+)(\s+[^>]+)?>(.*?)</set(?::([^>]+))?>`)
+	brRe        = regexp.MustCompile(`^<br/?>$`)
 	tabRe       = regexp.MustCompile(`^<tab(\s+size=(\d+))?\s*/?>$`)
-	hrRe        = regexp.MustCompile(`^<hr(\s+[^>]*)?>$`)
-	pageBreakRe = regexp.MustCompile(`^<pb>$|^<page-break>$`)
+	hrRe        = regexp.MustCompile(`^<hr(\s+[^>]*)?/?>$`)
+	pageBreakRe = regexp.MustCompile(`^<pb/?>$|^<page-break/?>$`)
 )
 
 type inlinePart struct {
@@ -51,13 +51,17 @@ func (c *Compiler) renderBody(body string) error {
 		}
 
 		switch {
-		case line == "<ul>" || line == "<ol>":
-			ordered := line == "<ol>"
+		case strings.HasPrefix(line, "<ul") || strings.HasPrefix(line, "<ol"):
+			ordered := strings.HasPrefix(line, "<ol")
+			var numFmt string
+			if ordered && !strings.HasPrefix(line, "<ol>") {
+				numFmt = parseListType(line)
+			}
 			items, next, err := c.collectListItems(lines, i)
 			if err != nil {
 				return err
 			}
-			if err := c.r.AddList(items, ordered); err != nil {
+			if err := c.r.AddList(items, ordered, numFmt); err != nil {
 				return err
 			}
 			i = next
@@ -74,7 +78,7 @@ func (c *Compiler) renderBody(body string) error {
 			}
 			i = next
 
-		case strings.HasPrefix(line, "<p") && !strings.HasSuffix(line, "</p>"):
+		case (strings.HasPrefix(line, "<p>") || strings.HasPrefix(line, "<p ")) && !strings.HasSuffix(line, "</p>"):
 			closeIdx := strings.LastIndex(line, "</p>")
 			if closeIdx < 0 {
 				content, attrs, next, err := c.collectPTag(lines, i, line)
@@ -140,7 +144,11 @@ func (c *Compiler) collectPTag(lines []string, start int, firstLine string) (str
 		}
 		buf.WriteString(tr)
 	}
-	return strings.TrimSpace(buf.String()), attrs, i, nil
+	content := strings.TrimSpace(buf.String())
+	if strings.Contains(content, "<h") {
+		return "", nil, 0, fmt.Errorf("<p>: heading tags inside <p> are not allowed")
+	}
+	return content, attrs, i, nil
 }
 
 func tagAttrs(tagLine string, gtIdx int) string {
@@ -186,11 +194,21 @@ func (c *Compiler) collectWTag(lines []string, start int, firstLine string) (str
 		}
 		buf.WriteString(tr)
 	}
-	return flags, attrs, strings.TrimSpace(buf.String()), i, nil
+	content := strings.TrimSpace(buf.String())
+	if strings.Contains(content, "<w:") {
+		return "", nil, "", 0, fmt.Errorf("<w:%s>: nested <w:> tags are not allowed", flags)
+	}
+	if strings.Contains(content, "<h") {
+		return "", nil, "", 0, fmt.Errorf("<w:%s>: heading tags inside <w:> are not allowed", flags)
+	}
+	return flags, attrs, content, i, nil
 }
 
 func (c *Compiler) renderWrappedContent(content, flags string, attrs map[string]string) error {
-	runs := inlineToRuns(content)
+	runs, err := inlineToRuns(content)
+	if err != nil {
+		return err
+	}
 	for _, f := range strings.Split(flags, "|") {
 		switch f {
 		case "c":
@@ -243,21 +261,22 @@ func (c *Compiler) renderWrappedContent(content, flags string, attrs map[string]
 func (c *Compiler) expandLoops(body string) string {
 	return loopRe.ReplaceAllStringFunc(body, func(match string) string {
 		m := loopRe.FindStringSubmatch(match)
-		if len(m) < 8 {
+		if len(m) < 9 {
 			return match
 		}
 		// Validate closing tag variant matches opening variant
-		if m[1] != m[7] {
+		if m[1] != m[8] {
 			return match
 		}
 		variant := m[1]
 		styleFirst := m[2] // style.first before varName
+		loopType := m[5]   // type= (a/A/i/I)
 		if styleFirst == "" {
-			styleFirst = m[5] // style.first after sourceName
+			styleFirst = m[6] // style.first after sourceName
 		}
 		varName := m[3]
 		sourceName := m[4]
-		tmpl := m[6]
+		tmpl := m[7]
 
 		raw, ok := c.ds.Get(sourceName)
 		if !ok {
@@ -279,7 +298,11 @@ func (c *Compiler) expandLoops(body string) string {
 		switch variant {
 		case "ol":
 			var sb strings.Builder
-			sb.WriteString("<ol>\n")
+			if loopType != "" {
+				sb.WriteString(fmt.Sprintf("<ol type=%s>\n", loopType))
+			} else {
+				sb.WriteString("<ol>\n")
+			}
 			for i, item := range items {
 				if i == 0 && styleFirst != "" {
 					sb.WriteString(fmt.Sprintf(`<li style=%s>`, styleFirst))
@@ -405,7 +428,11 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 
 	if strings.HasSuffix(startLine, "</li>") {
 		text := startLine[gtIdx+1 : len(startLine)-5]
-		return ListItem{Runs: inlineToRuns(text), Attrs: attrs}, start, nil
+		runs, err := inlineToRuns(text)
+		if err != nil {
+			return ListItem{}, 0, err
+		}
+		return ListItem{Runs: runs, Attrs: attrs}, start, nil
 	}
 
 	textAfter := startLine[gtIdx+1:]
@@ -418,13 +445,18 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 
 	var subItems []ListItem
 	var subOrdered bool
+	var subNumFmt string
 	i := start
 	for i < len(lines) {
 		line := strings.TrimSpace(lines[i])
 		i++
 
-		if line == "<ul>" || line == "<ol>" {
-			subOrdered = line == "<ol>"
+		if line == "<ul>" || strings.HasPrefix(line, "<ol") {
+			subOrdered = strings.HasPrefix(line, "<ol")
+			subNumFmt = ""
+			if subOrdered && line != "<ol>" {
+				subNumFmt = parseListType(line)
+			}
 			var err error
 			subItems, i, err = c.collectListItems(lines, i)
 			if err != nil {
@@ -445,10 +477,15 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 
 	raw := strings.TrimSpace(buf.String())
 
-	item := ListItem{Runs: inlineToRuns(raw), Attrs: attrs}
+	runs, err := inlineToRuns(raw)
+	if err != nil {
+		return ListItem{}, 0, err
+	}
+	item := ListItem{Runs: runs, Attrs: attrs}
 	if len(subItems) > 0 {
 		item.Items = subItems
 		item.Ordered = subOrdered
+		item.NumFormat = subNumFmt
 	}
 	return item, i, nil
 }
@@ -491,7 +528,11 @@ func (c *Compiler) collectRowCells(lines []string, start int) ([]TableCell, int,
 			if strings.HasSuffix(line, "</col>") {
 				attrs := parseAttrs(line[4:gtIdx])
 				text := line[gtIdx+1 : len(line)-6]
-				cells = append(cells, TableCell{Runs: inlineToRuns(text), Attrs: attrs})
+				runs, err := inlineToRuns(text)
+				if err != nil {
+					return nil, 0, err
+				}
+				cells = append(cells, TableCell{Runs: runs, Attrs: attrs})
 			} else {
 				// Multi-line <col> — collect until </col>
 				firstAttrs := parseAttrs(line[4:gtIdx])
@@ -519,7 +560,11 @@ func (c *Compiler) collectRowCells(lines []string, start int) ([]TableCell, int,
 					}
 					buf.WriteString(tr)
 				}
-				cells = append(cells, TableCell{Runs: inlineToRuns(strings.TrimSpace(buf.String())), Attrs: firstAttrs})
+				runs2, err := inlineToRuns(strings.TrimSpace(buf.String()))
+				if err != nil {
+					return nil, 0, err
+				}
+				cells = append(cells, TableCell{Runs: runs2, Attrs: firstAttrs})
 			}
 		}
 	}
@@ -543,18 +588,30 @@ func (c *Compiler) parseLine(line string) error {
 		m := hRe.FindStringSubmatch(line)
 		if len(m) == 5 && m[1] == m[4] {
 			attrs := parseAttrs(m[2])
+			if strings.Contains(m[3], "<h") {
+				return fmt.Errorf("heading nesting is not allowed")
+			}
 			return c.r.AddHeading(m[3], atoi(m[1]), attrs)
 		}
 
-	case strings.HasPrefix(line, "<p"):
+	case strings.HasPrefix(line, "<p>") || strings.HasPrefix(line, "<p "):
 		m := pRe.FindStringSubmatch(line)
 		if len(m) == 3 {
+			if strings.Contains(m[2], "<h") {
+				return fmt.Errorf("heading tags inside <p> are not allowed")
+			}
 			return c.renderParagraph(m[2], parseAttrs(m[1]))
 		}
 
 	case strings.HasPrefix(line, "<w:"):
 		m := wRe.FindStringSubmatch(line)
 		if len(m) == 5 && m[1] == m[4] {
+			if strings.Contains(m[3], "<w:") {
+				return fmt.Errorf("<w:%s>: nested <w:> tags are not allowed", m[1])
+			}
+			if strings.Contains(m[3], "<h") {
+				return fmt.Errorf("<w:%s>: heading tags inside <w:> are not allowed", m[1])
+			}
 			return c.renderWrappedContent(m[3], m[1], parseAttrs(m[2]))
 		}
 
@@ -577,10 +634,101 @@ func (c *Compiler) parseLine(line string) error {
 }
 
 func (c *Compiler) renderParagraph(content string, attrs map[string]string) error {
-	return c.r.AddParagraph(inlineToRuns(content), attrs)
+	runs, err := inlineToRuns(content)
+	if err != nil {
+		return err
+	}
+	return c.r.AddParagraph(runs, attrs)
 }
 
-func inlineToRuns(content string) []TextRun {
+var (
+	openTagRe  = regexp.MustCompile(`<(b|i|u|s|code|mark|sub|sup)(?:[=>\s][^><]*)?>`)
+	openARe    = regexp.MustCompile(`<a=[^><]*>`)
+	openSetRe  = regexp.MustCompile(`<set:(\w+(?:\|\w+)*)(?:\s+[^><]*)?>`)
+	closeTagRe = regexp.MustCompile(`</(b|i|u|s|code|mark|sub|sup|a)>`)
+	closeSetRe = regexp.MustCompile(`</set(?::(\w+(?:\|\w+)*))?>`)
+)
+
+type tagMatch struct {
+	m    string
+	name string
+	idx  int
+	end  int
+	kind byte // 'o' = opening, 'c' = closing
+}
+
+func validateTagBalance(s string) error {
+	var stack []string
+	pos := 0
+	for pos < len(s) {
+		next := strings.IndexByte(s[pos:], '<')
+		if next < 0 {
+			break
+		}
+		pos += next
+
+		var best *tagMatch
+		check := func(re *regexp.Regexp, kind byte, nameFn func(string) string) {
+			loc := re.FindStringIndex(s[pos:])
+			if len(loc) < 2 {
+				return
+			}
+			m := s[pos+loc[0] : pos+loc[1]]
+			name := nameFn(m)
+			if best == nil || loc[0] < best.idx {
+				best = &tagMatch{m: m, name: name, idx: loc[0], end: loc[1], kind: kind}
+			}
+		}
+
+		check(closeTagRe, 'c', func(m string) string { return closeTagRe.FindStringSubmatch(m)[1] })
+		check(closeSetRe, 'c', func(m string) string {
+			sm := closeSetRe.FindStringSubmatch(m)
+			if sm[1] == "" {
+				return "set:"
+			}
+			return "set:" + sm[1]
+		})
+		check(openTagRe, 'o', func(m string) string { return openTagRe.FindStringSubmatch(m)[1] })
+		check(openARe, 'o', func(m string) string { return "a" })
+		check(openSetRe, 'o', func(m string) string { return "set:" + openSetRe.FindStringSubmatch(m)[1] })
+
+		if best == nil {
+			// Unknown tag — skip past it
+			if end := strings.IndexByte(s[pos+1:], '>'); end >= 0 {
+				pos += end + 2
+			} else {
+				pos++
+			}
+			continue
+		}
+
+		switch best.kind {
+		case 'c':
+			if len(stack) == 0 {
+				return fmt.Errorf("unexpected closing tag <%s>", best.m)
+			}
+			top := stack[len(stack)-1]
+			if top != best.name {
+				if !(best.name == "set:" && strings.HasPrefix(top, "set:")) {
+					return fmt.Errorf("tag balancing error: expected </%s> but found <%s>", top, best.m)
+				}
+			}
+			stack = stack[:len(stack)-1]
+		case 'o':
+			stack = append(stack, best.name)
+		}
+		pos += best.end
+	}
+	if len(stack) > 0 {
+		return fmt.Errorf("tag balancing error: unclosed tag <%s>", stack[len(stack)-1])
+	}
+	return nil
+}
+
+func inlineToRuns(content string) ([]TextRun, error) {
+	if err := validateTagBalance(content); err != nil {
+		return nil, err
+	}
 	parts := splitInline(content)
 	runs := make([]TextRun, 0, len(parts))
 	for _, part := range parts {
@@ -642,7 +790,7 @@ func inlineToRuns(content string) []TextRun {
 			}
 		}
 	}
-	return runs
+	return runs, nil
 }
 
 func splitInline(s string) []inlinePart {
@@ -757,8 +905,11 @@ func splitInline(s string) []inlinePart {
 			}
 			idx := loc[0]
 			openFlags := s[pos+loc[2] : pos+loc[3]]
-			closeFlags := s[pos+loc[8] : pos+loc[9]]
-			if openFlags != closeFlags {
+			closeFlags := ""
+			if loc[8] >= 0 {
+				closeFlags = s[pos+loc[8] : pos+loc[9]]
+			}
+			if openFlags != closeFlags && closeFlags != "" {
 				return
 			}
 			attrs := ""
@@ -804,6 +955,19 @@ func mergeAttrs(base, over map[string]string) map[string]string {
 		}
 	}
 	return base
+}
+
+func parseListType(line string) string {
+	idx := strings.Index(line, "type=")
+	if idx < 0 {
+		return ""
+	}
+	rest := line[idx+5:]
+	end := strings.IndexAny(rest, " >")
+	if end < 0 {
+		return ""
+	}
+	return rest[:end]
 }
 
 func parseAttrs(s string) map[string]string {

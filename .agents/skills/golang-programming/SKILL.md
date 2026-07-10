@@ -192,7 +192,7 @@ type Renderer interface {
     AddPageBreak() error
     AddImage(src string, attrs map[string]string) error
     AddHyperlink(text, url string, attrs map[string]string) error
-    AddList(items []ListItem, ordered bool) error
+    AddList(items []ListItem, ordered bool, numFmt string) error
     AddTable(rows []TableRow, attrs map[string]string) error
 
     Save(path string) error
@@ -235,8 +235,11 @@ For lists with rich formatting:
 
 ```go
 type ListItem struct {
-    Runs  []TextRun
-    Items []ListItem  // For nested lists (not supported in v0.2.0)
+    Runs      []TextRun
+    Items     []ListItem
+    Attrs     map[string]string
+    Ordered   bool
+    NumFormat string // ""=decimal, "A"=upperLetter, "a"=lowerLetter, "I"=upperRoman, "i"=lowerRoman
 }
 
 // Example
@@ -250,7 +253,7 @@ items := []render.ListItem{
     {Runs: []render.TextRun{{Text: "Code item", Code: true}}},
 }
 
-r.AddList(items, false) // false = unordered list
+r.AddList(items, false, "") // false = unordered list, "" = decimal numbering
 ```
 
 ### TableCell & TableRow

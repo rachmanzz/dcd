@@ -10,6 +10,7 @@ All tags go in the body section (after `---`).
 | `<p>text</p>` | Paragraph with inline formatting |
 | `<w:flags>text</w:flags>` | Wrapped paragraph (`c` = center, `b` = bold, `i` = italic, `u` = underline) |
 | `<br>` | Line break |
+| `<tab>` / `<tab size=N>` | Tab character (inside `<p>`) |
 | `<hr attrs>` | Horizontal rule |
 | `<pb>` / `<page-break>` | Page break |
 
@@ -127,14 +128,16 @@ border-bottom=single
   <li>Item 3</li>
 </ul>
 
-<ol>
+<ol type=A>
   <li>Step 1</li>
   <li>Step 2</li>
   <li>Step 3</li>
 </ol>
 ```
 
-**Note:** Nested lists are **not supported**. Nested list tags will be stripped from the output.
+**Ordered list type:** `<ol type=A>` controls numbering format. Supported: `A` (uppercase letters), `a` (lowercase), `I` (uppercase roman), `i` (lowercase roman). Default is numeric.
+
+**Nested lists** are supported up to 3 levels.
 
 ## Loop Tags
 
@@ -147,7 +150,7 @@ border-bottom=single
 | Variant | Description |
 |---------|-------------|
 | `<loop x from source>...</loop>` | Plain iteration |
-| `<loop:ol x from source>...</loop>` | Ordered list iteration |
+| `<loop:ol x from source type=A>...</loop>` | Ordered list iteration (optional `type=a/A/i/I`) |
 | `<loop:ul x from source>...</loop>` | Unordered list iteration |
 | `<loop:row x from source>...</loop>` | Table row iteration |
 

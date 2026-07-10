@@ -237,7 +237,9 @@ Sections without `var` or `keys` are allowed: unresolvable `{{...}}` variables p
 
 > **TAG BALANCING:** Every opened tag must be closed exactly. `<loop:ol>` MUST close with `</loop:ol>`, NOT `</loop>`.
 >
-> **STRICT NESTING RULE:** `<w:*>` tags MUST contain ONLY pure text and `{{vars}}`. Nested tags (e.g. `<b>`, `<i>`) are STRICTLY FORBIDDEN inside `<w:*>`.
+> **NO `<w:*>` NESTING:** `<w:*>` tags MUST NOT contain other `<w:*>` tags. `<w:c><w:b>text</w:b></w:c>` is an error. Use OR logic in a single tag: `<w:c|b>text</w:c|b>`.
+>
+> **NO HEADING NESTING:** Heading tags `<h1>`–`<h6>` MUST NOT appear inside `<p>`, `<w:*>`, or other heading tags. `<p><h2>text</h2></p>` and `<h1><h2>text</h2></h1>` are errors.
 
 | Tag                              | Description                     |
 |----------------------------------|---------------------------------|
@@ -252,6 +254,8 @@ Sections without `var` or `keys` are allowed: unresolvable `{{...}}` variables p
 | `<w:c\|s>...</w:c\|s>`           | Center + Strikethrough           |
 | `<p>`                            | Paragraph                       |
 | `<br>`                           | Line break                      |
+| `<tab>`                          | Tab character (inside `<p>`)    |
+| `<tab size=N>`                   | Tab with N spaces               |
 | `<loop x from var>...</loop>`     | Iterate array `var`, each item as `x` |
 | `<loop:ol x from var>...</loop:ol>` | Iterate + wrap `<ol><li>`       |
 | `<loop:ul x from var>...</loop:ul>` | Iterate + wrap `<ul><li>`       |
@@ -772,10 +776,20 @@ Inline:
 <p>page 2</p>
 ```
 
-| Tag             | Description       |
-|-----------------|-------------------|
-| `<pb>`          | Page break        |
-| `<page-break>`  | Alias for `<pb>`  |
+| Tag              | Description       |
+|------------------|-------------------|
+| `<pb>`           | Page break        |
+| `<page-break>`   | Alias for `<pb>`  |
+| `<tab>`          | Tab character     |
+| `<tab size=N>`   | Tab with N spaces |
+
+`<tab>` can appear inside `<p>` paragraphs to insert a tab stop. The optional `size=N` attribute sets
+an explicit number of spaces (defaults to one standard tab).
+
+```
+<p>Name:<tab>John Doe</p>
+<p>Age:<tab size=4>25</p>
+```
 
 ### Section Break
 

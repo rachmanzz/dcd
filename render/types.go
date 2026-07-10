@@ -28,10 +28,11 @@ type TableRow struct {
 }
 
 type ListItem struct {
-	Runs    []TextRun
-	Items   []ListItem
-	Attrs   map[string]string
-	Ordered bool // sub-list type — true for <ol>, false for <ul>
+	Runs      []TextRun
+	Items     []ListItem
+	Attrs     map[string]string
+	Ordered   bool   // sub-list type — true for <ol>, false for <ul>
+	NumFormat string // "" = decimal, "A" = upperLetter, "a" = lowerLetter, "I" = upperRoman, "i" = lowerRoman
 }
 
 type Renderer interface {
@@ -40,10 +41,11 @@ type Renderer interface {
 	AddLineBreak() error
 	AddHorizontalRule(attrs map[string]string) error
 	AddPageBreak() error
+	AddSectionBreak(sectionType string) error
 	AddImage(src string, attrs map[string]string) error
 	AddHyperlink(text, url string, attrs map[string]string) error
 	AddWrappedParagraph(text string, flags string, attrs map[string]string) error
-	AddList(items []ListItem, ordered bool) error
+	AddList(items []ListItem, ordered bool, numFmt string) error
 	AddTable(rows []TableRow, attrs map[string]string) error
 	SetPageStyle(props map[string]string) error
 	SetHeader(props map[string]string) error
