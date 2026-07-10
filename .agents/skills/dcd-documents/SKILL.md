@@ -70,6 +70,23 @@ color=#000000
 line-height=1.5
 ```
 
+### Paragraph
+
+Global default for paragraph indentation.
+
+| Property  | Description                      | Example |
+|-----------|----------------------------------|---------|
+| `indent`  | Left indent (in document unit)   | 1       |
+| `hanging` | Hanging indent (in document unit)| 0.5     |
+
+```
+[style]
+indent=0.5
+hanging=0.25
+```
+
+Inline `<p indent=X>` / `<li indent=X>` overrides this default.
+
 ### Margins
 
 All margin examples below assume:
@@ -122,7 +139,7 @@ Document content template with structured data.
 ```
 [section 0]
 name=userinfo
-var=info, entries
+var=info, []entries
 keys=username, date_field, time_field
 formats=[date_field:dd-MM-yyyy], [time_field:HH\:m]
 
@@ -261,6 +278,30 @@ Sections without `var` or `keys` are allowed: unresolvable `{{...}}` variables p
 | `<loop:ul x from var>...</loop:ul>` | Iterate + wrap `<ul><li>`       |
 
 > Note: `\|` inside table cells is markdown escape for `|` — the actual tag is `<w:b|i>` etc.
+
+### Paragraph Properties
+
+`<p>` and `<li>` tags accept paragraph-level formatting attributes:
+
+| Property  | Example       | Description                            |
+|-----------|---------------|----------------------------------------|
+| `indent`  | `indent=0.5`  | Left indent (in document unit)         |
+| `hanging` | `hanging=0.25`| Hanging indent (removed from first line) |
+
+Applies to the entire paragraph. `hanging` shifts the first line left relative to `indent`.
+
+```
+<p indent=1 hanging=0.5>
+  First line starts 0.5 from left margin,
+  rest of paragraph indented 1 from margin.
+</p>
+
+<li indent=0.5 hanging=0.25>list item with custom indent</li>
+```
+
+**Precedence (high → low):**
+1. Inline attribute on `<p>` or `<li>`
+2. `[style] indent` / `[style] hanging` global
 
 ### Inline Tags (inside `<p>`, `<li>`, `<col>`)
 
@@ -555,7 +596,7 @@ Nested:
 |-----------|------------------------------------------------|
 | `<ol>`    | Ordered list (supports `type=a/A/1/i/I`)       |
 | `<ul>`    | Unordered list                                 |
-| `<li>`    | List item                                      |
+| `<li>`    | List item (supports `indent`/`hanging`, see [Paragraph Properties](#paragraph-properties)) |
 
 Supported `type` values for `<ol>`: `1` (default, numbers), `a` (lowercase letters), `A` (uppercase letters), `i` (lowercase roman), `I` (uppercase roman).
 

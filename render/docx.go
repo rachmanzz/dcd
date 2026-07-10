@@ -225,6 +225,36 @@ func (d *DocxRenderer) AddHeading(text string, level int, attrs map[string]strin
 	return nil
 }
 
+func (d *DocxRenderer) applyIndent(pPr *ctypes.ParagraphProp, attrs, defaults map[string]string) {
+	indent := ""
+	hanging := ""
+	if attrs != nil {
+		indent = attrs["indent"]
+		hanging = attrs["hanging"]
+	}
+	if indent == "" && defaults != nil {
+		indent = defaults["indent"]
+	}
+	if hanging == "" && defaults != nil {
+		hanging = defaults["hanging"]
+	}
+	if indent == "" && hanging == "" {
+		return
+	}
+	scale := unitScale(d.unit)
+	if pPr.Indent == nil {
+		pPr.Indent = &ctypes.Indent{}
+	}
+	if indent != "" {
+		v := int(atof(indent) * scale * 56.7)
+		pPr.Indent.Left = &v
+	}
+	if hanging != "" {
+		v := uint64(atof(hanging) * scale * 56.7)
+		pPr.Indent.Hanging = &v
+	}
+}
+
 func (d *DocxRenderer) AddParagraph(runs []TextRun, attrs map[string]string) error {
 	if d.root == nil {
 		if err := d.init(); err != nil {
@@ -254,15 +284,7 @@ func (d *DocxRenderer) AddParagraph(runs []TextRun, attrs map[string]string) err
 		}
 	}
 
-	if d.defaultStyle != nil {
-		if lh := d.defaultStyle["line-height"]; lh != "" {
-			if pPr.Spacing == nil {
-				pPr.Spacing = &ctypes.Spacing{}
-			}
-			v := int(atof(lh) * 240)
-			pPr.Spacing.Line = &v
-		}
-	}
+	d.applyIndent(pPr, attrs, d.defaultStyle)
 
 	for _, r := range runs {
 		if r.Tab {
@@ -653,6 +675,12 @@ func (d *DocxRenderer) addListAtDepth(items []ListItem, ordered bool, numFmt str
 			p.Style(style)
 			id, _ := strconv.Atoi(numID)
 			p.Numbering(id, 0)
+			pPr := p.GetCT().Property
+			if pPr == nil {
+				pPr = &ctypes.ParagraphProp{}
+				p.GetCT().Property = pPr
+			}
+			d.applyIndent(pPr, item.Attrs, d.defaultStyle)
 			for _, run := range item.Runs {
 				r := p.AddText(run.Text)
 				ctRun := p.GetCT().Children[len(p.GetCT().Children)-1].Run
