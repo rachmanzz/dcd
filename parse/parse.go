@@ -6,19 +6,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
-)
 
-// normalizePropertyKey maps user-facing property names to internal keys
-func normalizePropertyKey(key string) string {
-	switch key {
-	case "color":
-		return "font-color"
-	case "bg":
-		return "shading"
-	default:
-		return key
-	}
-}
+	"github.com/rachmanzz/dcd/internal/property"
+)
 
 func Parse(path string) (*Doc, error) {
 	f, err := os.Open(path)
@@ -57,7 +47,7 @@ func Parse(path string) (*Doc, error) {
 
 			case cur != nil:
 				if k, v, ok := strings.Cut(trimmed, "="); ok {
-					k = normalizePropertyKey(strings.TrimSpace(k))
+					k = property.NormalizeKey(strings.TrimSpace(k))
 					doc.Sections[len(doc.Sections)-1].Props[k] = strings.TrimSpace(v)
 				}
 			}

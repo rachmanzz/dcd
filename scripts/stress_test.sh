@@ -3532,6 +3532,23 @@ case "$err" in
   *) fail "E52 var bad chars" "error about invalid var name" "$err" ;;
 esac
 
+# --- E53. Custom <li> attributes in loop:ol/loop:ul ---
+cat > "$TMP/E53_custom_li_attrs.dcd" << 'EOF'
+[section 0]
+name=test
+var=info, []items
+keys=title
+--- BODY ---
+<p>{{info.title}}</p>
+<loop:ol x from items type=A>
+<li indent=20 hanging=10>{{x.label}}</li>
+</loop:ol>
+<loop:ul x from items>
+<li indent=15>{{x.label}}</li>
+</loop:ul>
+EOF
+BIN "$TMP/E53_custom_li_attrs.dcd" "$TMP/E53_custom_li_attrs.docx" 2>&1 && pass "E53 custom li attrs in loop" || fail "E53" "exit 0" "non-zero exit"
+
 echo
 echo "=========================================="
 echo "  STRESS TEST RESULTS"
