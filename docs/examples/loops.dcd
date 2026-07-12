@@ -1,0 +1,37 @@
+[style]
+layout=A4
+unit=mm
+m=20
+font-family="Segoe UI"
+font-size=11
+
+[title]
+title=Loop OL with Custom LI
+
+[header]
+justify_between=DCD Loops Demo, {{date}}
+font-size=8
+color=#888888
+
+[section 0]
+name=loops_data
+var=info, []questions, []steps
+keys=title
+
+--- BODY ---
+<h1>{{info.title}}</h1>
+<p>This document demonstrates <b>&lt;loop:ol type=a&gt;</b> and <b>&lt;loop:ol type=I&gt;</b> with custom <b>&lt;li&gt;</b> content.</p>
+
+<h2>Lowercase Letters (type=a)</h2>
+<p>Multiple choice questions with inline formatting inside each <b>&lt;li&gt;</b>:</p>
+
+<loop:ol x from questions type=a>
+<li indent=10 hanging=5><b>{{x.q}}</b> — <i>{{x.answer}}</i></li>
+</loop:ol>
+
+<h2>Roman Numerals (type=I)</h2>
+<p>Procedure steps with highlighted keywords:</p>
+
+<loop:ol x from steps type=I>
+<li indent=100><mark>{{x.action}}</mark>: {{x.detail}}</li>
+</loop:ol>

@@ -34,4 +34,8 @@ echo "→ inline-test.dcd → inline-test.docx"
 echo "→ set-tag-demo.dcd → settag-demo.docx"
 ./dcd docs/examples/set-tag-demo.dcd docs/examples/settag-demo.docx
 
+# Loops (with JSON)
+echo "→ loops.dcd + loops.json → loops.docx"
+./dcd --data docs/examples/loops.json docs/examples/loops.dcd docs/examples/loops.docx
+
 echo "✓ All examples generated successfully"

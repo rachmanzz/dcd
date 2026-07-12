@@ -57,28 +57,42 @@ func (c *Compiler) expandLoops(body string) string {
 			} else {
 				sb.WriteString("<ol>\n")
 			}
+			hasLi := strings.Contains(tmpl, "<li")
 			for i, item := range items {
-				if i == 0 && styleFirst != "" {
-					sb.WriteString(fmt.Sprintf(`<li style=%s>`, styleFirst))
+				trimmed := strings.TrimSpace(item)
+				if hasLi || strings.HasPrefix(trimmed, "<li") {
+					sb.WriteString(item)
+					sb.WriteString("\n")
 				} else {
-					sb.WriteString("<li>")
+					if i == 0 && styleFirst != "" {
+						sb.WriteString(fmt.Sprintf(`<li style=%s>`, styleFirst))
+					} else {
+						sb.WriteString("<li>")
+					}
+					sb.WriteString(item)
+					sb.WriteString("</li>\n")
 				}
-				sb.WriteString(item)
-				sb.WriteString("</li>\n")
 			}
 			sb.WriteString("</ol>")
 			return sb.String()
 		case "ul":
 			var sb strings.Builder
 			sb.WriteString("<ul>\n")
+			hasLi := strings.Contains(tmpl, "<li")
 			for i, item := range items {
-				if i == 0 && styleFirst != "" {
-					sb.WriteString(fmt.Sprintf(`<li style=%s>`, styleFirst))
+				trimmed := strings.TrimSpace(item)
+				if hasLi || strings.HasPrefix(trimmed, "<li") {
+					sb.WriteString(item)
+					sb.WriteString("\n")
 				} else {
-					sb.WriteString("<li>")
+					if i == 0 && styleFirst != "" {
+						sb.WriteString(fmt.Sprintf(`<li style=%s>`, styleFirst))
+					} else {
+						sb.WriteString("<li>")
+					}
+					sb.WriteString(item)
+					sb.WriteString("</li>\n")
 				}
-				sb.WriteString(item)
-				sb.WriteString("</li>\n")
 			}
 			sb.WriteString("</ul>")
 			return sb.String()

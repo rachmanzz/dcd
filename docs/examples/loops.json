@@ -1,0 +1,16 @@
+{
+  "info": {
+    "title": "Loop OL with Custom LI"
+  },
+  "questions": [
+    { "q": "What is the capital of Indonesia?", "answer": "Jakarta" },
+    { "q": "What is the largest planet?", "answer": "Jupiter" },
+    { "q": "What is the chemical symbol for water?", "answer": "H\u2082O" }
+  ],
+  "steps": [
+    { "action": "Prepare", "detail": "Gather all required materials and tools before starting" },
+    { "action": "Configure", "detail": "Set up the environment according to the specification" },
+    { "action": "Execute", "detail": "Run the process and monitor for errors" },
+    { "action": "Verify", "detail": "Check the output against expected results" }
+  ]
+}
