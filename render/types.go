@@ -13,6 +13,7 @@ type TextRun struct {
 	Sub            bool
 	Sup            bool
 	Tab            bool
+	Break          bool
 	Link           string
 	LinkAttrs      map[string]string
 }

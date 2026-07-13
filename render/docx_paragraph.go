@@ -200,6 +200,12 @@ func (d *DocxRenderer) AddParagraph(runs []TextRun, attrs map[string]string) err
 			ctRun.Children = []ctypes.RunChild{{Tab: &ctypes.Empty{}}}
 			continue
 		}
+		if r.Break {
+			p.AddText("")
+			ctRun := p.GetCT().Children[len(p.GetCT().Children)-1].Run
+			ctRun.Children = []ctypes.RunChild{{Break: &ctypes.Break{}}}
+			continue
+		}
 		run := p.AddText(r.Text)
 		ctRun := p.GetCT().Children[len(p.GetCT().Children)-1].Run
 

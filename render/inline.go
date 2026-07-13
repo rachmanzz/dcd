@@ -18,7 +18,8 @@ var (
 	subRe     = regexp.MustCompile(`<sub>(.*?)</sub>`)
 	supRe     = regexp.MustCompile(`<sup>(.*?)</sup>`)
 	setRe     = regexp.MustCompile(`<set:([^\s>]+)(\s+[^>]+)?>(.*?)</set(?::([^>]+))?>`)
-	tabRe     = regexp.MustCompile(`^<tab(\s+size=(\d+))?\s*/?>$`)
+	tabRe     = regexp.MustCompile(`<tab(\s+size=(\d+))?\s*/?>`)
+	brInlineRe = regexp.MustCompile(`<br\s*/?>`)
 	openTagRe = regexp.MustCompile(`<(b|i|u|s|code|mark|sub|sup)(?:[=>\s][^><]*)?>`)
 	openARe   = regexp.MustCompile(`<a=[^><]*>`)
 	openSetRe = regexp.MustCompile(`<set:(\w+(?:\|\w+)*)(?:\s+[^><]*)?>`)
@@ -122,6 +123,8 @@ func inlineToRuns(content string) ([]TextRun, error) {
 			for i := 0; i < n; i++ {
 				runs = append(runs, TextRun{Tab: true})
 			}
+		case "br":
+			runs = append(runs, TextRun{Break: true})
 		default:
 			// Check if part.tag contains "|" or has attrs (set:flags format)
 			if strings.Contains(part.tag, "|") || strings.Contains(part.tag, " ") {
@@ -273,6 +276,18 @@ func splitInline(s string) []inlinePart {
 			}
 		}
 		checkTab()
+
+		checkBr := func() {
+			loc := brInlineRe.FindStringSubmatchIndex(s[pos:])
+			if len(loc) < 2 || loc[0] < 0 {
+				return
+			}
+			idx := loc[0]
+			if best == nil || idx < best.idx {
+				best = &match{tag: "br", skip: loc[1] - loc[0], idx: idx}
+			}
+		}
+		checkBr()
 
 		// Check for <set:flags> tag
 		checkSet := func() {

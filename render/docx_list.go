@@ -68,6 +68,18 @@ func (d *DocxRenderer) addListAtDepth(items []ListItem, ordered bool, numFmt str
 			}
 			d.applyIndent(pPr, item.Attrs, d.defaultStyle)
 			for _, run := range item.Runs {
+				if run.Tab {
+					p.AddText("")
+					ctRun := p.GetCT().Children[len(p.GetCT().Children)-1].Run
+					ctRun.Children = []ctypes.RunChild{{Tab: &ctypes.Empty{}}}
+					continue
+				}
+				if run.Break {
+					p.AddText("")
+					ctRun := p.GetCT().Children[len(p.GetCT().Children)-1].Run
+					ctRun.Children = []ctypes.RunChild{{Break: &ctypes.Break{}}}
+					continue
+				}
 				r := p.AddText(run.Text)
 				ctRun := p.GetCT().Children[len(p.GetCT().Children)-1].Run
 
