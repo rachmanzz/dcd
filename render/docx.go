@@ -106,7 +106,7 @@ func (d *DocxRenderer) SetPageStyle(props map[string]string) error {
 	}
 
 	d.unit = props["unit"]
-	w, h := parsePageSize(props["layout"], props["orientation"], props["w"], props["h"])
+	w, h := parsePageSize(props["layout"], props["orientation"], props["w"], props["h"], props["unit"])
 	l, r, t, b := computeMargins(props)
 
 	mmToTwip := func(mm float64) uint64 {

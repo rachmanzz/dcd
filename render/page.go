@@ -2,7 +2,8 @@ package render
 
 import "strings"
 
-func parsePageSize(layout, orient, customW, customH string) (width, height float64) {
+func parsePageSize(layout, orient, customW, customH, unit string) (width, height float64) {
+	scale := unitScale(unit)
 	switch strings.ToLower(layout) {
 	case "letter":
 		width, height = 215.9, 279.4
@@ -15,8 +16,8 @@ func parsePageSize(layout, orient, customW, customH string) (width, height float
 	case "b5":
 		width, height = 176, 250
 	case "custom":
-		width = atof(customW)
-		height = atof(customH)
+		width = atof(customW) * scale
+		height = atof(customH) * scale
 		if width == 0 {
 			width = 210
 		}
@@ -75,6 +76,19 @@ func computeMargins(props map[string]string) (left, right, top, bottom float64) 
 		left = atof(ml) * scale
 	}
 	if mr := props["mr"]; mr != "" {
+		right = atof(mr) * scale
+	}
+	// Support m-t/m-b/m-l/m-r (with dash) — override if set
+	if mt := props["m-t"]; mt != "" {
+		top = atof(mt) * scale
+	}
+	if mb := props["m-b"]; mb != "" {
+		bottom = atof(mb) * scale
+	}
+	if ml := props["m-l"]; ml != "" {
+		left = atof(ml) * scale
+	}
+	if mr := props["m-r"]; mr != "" {
 		right = atof(mr) * scale
 	}
 	return
