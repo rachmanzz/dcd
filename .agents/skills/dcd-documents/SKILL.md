@@ -726,6 +726,20 @@ Works in `<loop>`, `<loop:ol>`, `<loop:ul>`, and `<loop:row>`:
 
 Renders as `<ol><li>1. Item A</li><li>2. Item B</li><li>3. Item C</li></ol>`.
 
+#### `{{loop.index}}` — Double-Brace Variant
+
+Use `{{loop.index}}` (double braces) inside any loop for a 1-based counter. This variant works with double-brace syntax and takes priority over variable resolution.
+
+| Pattern           | Result                |
+|-------------------|-----------------------|
+| `{{loop.index}}`  | 1, 2, 3, 4, ...      |
+
+```
+<loop x from items>
+  <p>Item {{loop.index}}: {{x.name}}</p>
+</loop>
+```
+
 Multiple indexes in one template:
 
 ```

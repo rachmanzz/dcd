@@ -11,7 +11,8 @@ var (
 	loopRe        = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+type=(\w+))?(?:\s+style\.first=(\w+))?>(.*?)</loop(?::(\w+))?>`)
 	loopSourceRe  = regexp.MustCompile(`<loop(?::\w+)?\s+\w+\s+from\s+([\w.]+)(?:\s+type=(\w+))?`)
 	objectVarRe   = regexp.MustCompile(`\{\{(\w+)\.`)
-	indexPatternRe = regexp.MustCompile(`\{index\+(\d+)\}`)
+	indexPatternRe  = regexp.MustCompile(`\{index\+(\d+)\}`)
+	loopIndexRe     = regexp.MustCompile(`\{\{loop\.index\}\}`)
 )
 
 func (c *Compiler) expandLoops(body string) string {
@@ -140,7 +141,9 @@ func expandLoopTemplate(tmpl, varName string, item any, index int) string {
 		result.WriteString(tmpl[pos:start])
 		expr := tmpl[start+2 : end-2]
 
-		if expr == varName {
+		if expr == "loop.index" {
+			result.WriteString(strconv.Itoa(index + 1))
+		} else if expr == varName {
 			result.WriteString(fmt.Sprintf("%v", item))
 		} else if strings.HasPrefix(expr, varName+".") {
 			key := expr[len(varName)+1:]
