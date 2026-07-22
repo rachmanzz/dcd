@@ -3,13 +3,15 @@ package render
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
 var (
-	loopRe       = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+type=(\w+))?(?:\s+style\.first=(\w+))?>(.*?)</loop(?::(\w+))?>`)
-	loopSourceRe = regexp.MustCompile(`<loop(?::\w+)?\s+\w+\s+from\s+([\w.]+)(?:\s+type=(\w+))?`)
-	objectVarRe  = regexp.MustCompile(`\{\{(\w+)\.`)
+	loopRe        = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+type=(\w+))?(?:\s+style\.first=(\w+))?>(.*?)</loop(?::(\w+))?>`)
+	loopSourceRe  = regexp.MustCompile(`<loop(?::\w+)?\s+\w+\s+from\s+([\w.]+)(?:\s+type=(\w+))?`)
+	objectVarRe   = regexp.MustCompile(`\{\{(\w+)\.`)
+	indexPatternRe = regexp.MustCompile(`\{index\+(\d+)\}`)
 )
 
 func (c *Compiler) expandLoops(body string) string {
@@ -43,8 +45,8 @@ func (c *Compiler) expandLoops(body string) string {
 		}
 
 		var items []string
-		for _, item := range arr {
-			expanded := expandLoopTemplate(tmpl, varName, item)
+		for i, item := range arr {
+			expanded := expandLoopTemplate(tmpl, varName, item, i)
 			expanded = c.ds.Resolve(expanded)
 			items = append(items, expanded)
 		}
@@ -119,7 +121,7 @@ func (c *Compiler) expandLoops(body string) string {
 	})
 }
 
-func expandLoopTemplate(tmpl, varName string, item any) string {
+func expandLoopTemplate(tmpl, varName string, item any, index int) string {
 	var result strings.Builder
 	pos := 0
 	for pos < len(tmpl) {
@@ -153,7 +155,15 @@ func expandLoopTemplate(tmpl, varName string, item any) string {
 		}
 		pos = end
 	}
-	return result.String()
+	return expandIndexPattern(result.String(), index)
+}
+
+func expandIndexPattern(s string, index int) string {
+	return indexPatternRe.ReplaceAllStringFunc(s, func(match string) string {
+		m := indexPatternRe.FindStringSubmatch(match)
+		offset, _ := strconv.Atoi(m[1])
+		return strconv.Itoa(index + offset)
+	})
 }
 
 func resolveField(item any, key string) (any, bool) {

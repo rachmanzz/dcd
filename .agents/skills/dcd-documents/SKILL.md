@@ -256,6 +256,8 @@ Sections without `var` or `keys` are allowed: unresolvable `{{...}}` variables p
 >
 > **NO `<w:*>` NESTING:** `<w:*>` tags MUST NOT contain other `<w:*>` tags. `<w:c><w:b>text</w:b></w:c>` is an error. Use OR logic in a single tag: `<w:c|b>text</w:c|b>`.
 >
+> **TAB INSIDE `<w:*>`:** `<tab>`, `<tab/>`, and `<tab size=N>` ARE allowed inside `<w:*>` tags. `<br>` is also allowed.
+>
 > **NO HEADING NESTING:** Heading tags `<h1>`–`<h6>` MUST NOT appear inside `<p>`, `<w:*>`, or other heading tags. `<p><h2>text</h2></p>` and `<h1><h2>text</h2></h1>` are errors.
 
 | Tag                              | Description                     |
@@ -354,6 +356,18 @@ Block `<w:>` tags also accept attributes for additional formatting:
 | Tag                     | Attribute               | Values                    | Description        |
 |-------------------------|-------------------------|---------------------------|--------------------|
 | `<w:u>`                 | `underline`             | `single`, `double`, `dotted`, `dash`, `wavy` | Underline style |
+
+### Tab Inside W Block Tags
+
+`<tab>`, `<tab/>`, and `<tab size=N>` are allowed inside `<w:*>` tags:
+
+```
+<w:c|b>Name:<tab>John Doe</w:c|b>
+<w:c>City:<tab size=4>Jakarta</w:c>
+<w:b>Phone:<tab/>+62-812-3456-7890</w:b>
+```
+
+This enables formatted key-value layouts with tab stops inside centered, bold, or other styled blocks.
 
 ## 3. Headings
 
@@ -633,6 +647,7 @@ The data source name must be listed with `[]` prefix in `var=`. See [Var Usage](
 3. **Variable Access:** Inside the loop, access fields using the alias (e.g. `{{x.field}}`).
 4. **Closing Tag Rule:** The closing tag MUST EXACTLY MATCH the opening variant prefix, but MUST OMIT the action and attributes. Opening: `<loop:ol x from items type=A>` ➔ Closing: `</loop:ol>` (NOT `</loop>` and NOT `</loop:ol type=A>`).
 5. **List Loop Prohibition:** NEVER wrap a standard `<loop>` inside static `<ol>` or `<ul>` tags. Use the native `<loop:ol>` or `<loop:ul>` tags instead.
+6. **Silent Index:** Use `{index+N}` (single braces) to insert a 1-based counter. Index starts at 0, so `{index+1}` = 1, 2, 3...
 
 ```
 [section 0]
@@ -642,7 +657,7 @@ keys=title
 
 --- BODY ---
 <loop x from entries>
-  {{x.field}}
+  {index+1}. {{x.field}}
 </loop>
 ```
 
@@ -690,6 +705,34 @@ Renders as `<ol type=A><li>value</li><li>value</li></ol>`. Default `type` is `1`
 ```
 
 Renders as `<ul><li>value</li><li>value</li></ul>`.
+
+### Loop Index Counter
+
+Use `{index+N}` (single braces) inside any loop variant to insert an auto-incrementing counter. Index starts at **0**, so `{index+1}` produces 1, 2, 3...
+
+| Pattern     | Result                |
+|-------------|-----------------------|
+| `{index+1}` | 1, 2, 3, 4, ...      |
+| `{index+0}` | 0, 1, 2, 3, ...      |
+| `{index+10}`| 10, 11, 12, 13, ...  |
+
+Works in `<loop>`, `<loop:ol>`, `<loop:ul>`, and `<loop:row>`:
+
+```
+<loop:ol x from items>
+  {index+1}. {{x.label}}
+</loop:ol>
+```
+
+Renders as `<ol><li>1. Item A</li><li>2. Item B</li><li>3. Item C</li></ol>`.
+
+Multiple indexes in one template:
+
+```
+<loop x from entries>
+  <p>Entry #{index+1} of {{x.total}}: {{x.name}}</p>
+</loop>
+```
 
 ### Loop into Table Rows
 

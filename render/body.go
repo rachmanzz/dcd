@@ -183,6 +183,7 @@ func (c *Compiler) collectWTag(lines []string, start int, firstLine string) (str
 		buf.WriteString(tr)
 	}
 	content := strings.TrimSpace(buf.String())
+	// <tab>, <tab/>, <tab size=N>, and <br> are allowed inside <w:*> tags
 	if strings.Contains(content, "<w:") {
 		return "", nil, "", 0, fmt.Errorf("<w:%s>: nested <w:> tags are not allowed", flags)
 	}
@@ -278,6 +279,7 @@ func (c *Compiler) parseLine(line string) error {
 	case strings.HasPrefix(line, "<w:"):
 		m := wRe.FindStringSubmatch(line)
 		if len(m) == 5 && m[1] == m[4] {
+			// <tab>, <tab/>, <tab size=N>, and <br> are allowed inside <w:*> tags
 			if strings.Contains(m[3], "<w:") {
 				return fmt.Errorf("<w:%s>: nested <w:> tags are not allowed", m[1])
 			}
