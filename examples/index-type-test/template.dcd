@@ -1,0 +1,36 @@
+[title]
+title=Index Type Test
+
+[section 0]
+name=index_type_test
+
+--- BODY ---
+<h1>indexType=a</h1>
+<loop x from items indexType=a>
+<p>{index} - {{x.name}}</p>
+</loop>
+
+<h1>indexType=A</h1>
+<loop x from items indexType=A>
+<p>{index} - {{x.name}}</p>
+</loop>
+
+<h1>indexType=i</h1>
+<loop x from items indexType=i>
+<p>{index} - {{x.name}}</p>
+</loop>
+
+<h1>indexType=I</h1>
+<loop x from items indexType=I>
+<p>{index} - {{x.name}}</p>
+</loop>
+
+<h1>indexType=1</h1>
+<loop x from items indexType=1>
+<p>{index} - {{x.name}}</p>
+</loop>
+
+<h1>default (no indexType)</h1>
+<loop x from items>
+<p>{index} - {{x.name}}</p>
+</loop>

@@ -8,21 +8,22 @@ import (
 )
 
 var (
-	loopRe        = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+type=(\w+))?(?:\s+style\.first=(\w+))?>(.*?)</loop(?::(\w+))?>`)
+	loopRe        = regexp.MustCompile(`(?s)<loop(?::(\w+))?(?:\s+style\.first=(\w+))?\s+(\w+)\s+from\s+([\w.]+)(?:\s+type=(\w+))?(?:\s+style\.first=(\w+))?(?:\s+indexType=(\w+))?>(.*?)</loop(?::(\w+))?>`)
 	loopSourceRe  = regexp.MustCompile(`<loop(?::\w+)?\s+\w+\s+from\s+([\w.]+)(?:\s+type=(\w+))?`)
 	objectVarRe   = regexp.MustCompile(`\{\{(\w+)\.`)
 	indexPatternRe  = regexp.MustCompile(`\{index\+(\d+)\}`)
+	indexBareRe     = regexp.MustCompile(`\{index\}`)
 	loopIndexRe     = regexp.MustCompile(`\{\{loop\.index\}\}`)
 )
 
 func (c *Compiler) expandLoops(body string) string {
 	return loopRe.ReplaceAllStringFunc(body, func(match string) string {
 		m := loopRe.FindStringSubmatch(match)
-		if len(m) < 9 {
+		if len(m) < 10 {
 			return match
 		}
 		// Validate closing tag variant matches opening variant
-		if m[1] != m[8] {
+		if m[1] != m[9] {
 			return match
 		}
 		variant := m[1]
@@ -31,9 +32,10 @@ func (c *Compiler) expandLoops(body string) string {
 		if styleFirst == "" {
 			styleFirst = m[6] // style.first after sourceName
 		}
+		indexType := m[7] // indexType= (a/A/i/I/1)
 		varName := m[3]
 		sourceName := m[4]
-		tmpl := m[7]
+		tmpl := m[8]
 
 		raw, ok := c.ds.Get(sourceName)
 		if !ok {
@@ -47,7 +49,7 @@ func (c *Compiler) expandLoops(body string) string {
 
 		var items []string
 		for i, item := range arr {
-			expanded := expandLoopTemplate(tmpl, varName, item, i)
+			expanded := expandLoopTemplate(tmpl, varName, item, i, indexType)
 			expanded = c.ds.Resolve(expanded)
 			items = append(items, expanded)
 		}
@@ -122,7 +124,7 @@ func (c *Compiler) expandLoops(body string) string {
 	})
 }
 
-func expandLoopTemplate(tmpl, varName string, item any, index int) string {
+func expandLoopTemplate(tmpl, varName string, item any, index int, indexType string) string {
 	var result strings.Builder
 	pos := 0
 	for pos < len(tmpl) {
@@ -158,7 +160,10 @@ func expandLoopTemplate(tmpl, varName string, item any, index int) string {
 		}
 		pos = end
 	}
-	return expandIndexPattern(result.String(), index)
+	s := result.String()
+	s = expandIndexPattern(s, index)
+	s = expandIndexBare(s, index, indexType)
+	return s
 }
 
 func expandIndexPattern(s string, index int) string {
@@ -167,6 +172,44 @@ func expandIndexPattern(s string, index int) string {
 		offset, _ := strconv.Atoi(m[1])
 		return strconv.Itoa(index + offset)
 	})
+}
+
+func expandIndexBare(s string, index int, indexType string) string {
+	return indexBareRe.ReplaceAllStringFunc(s, func(match string) string {
+		return formatIndex(index, indexType)
+	})
+}
+
+func formatIndex(index int, indexType string) string {
+	switch indexType {
+	case "a":
+		return string(rune('a' + index))
+	case "A":
+		return string(rune('A' + index))
+	case "i":
+		return toRomanLower(index + 1)
+	case "I":
+		return toRomanUpper(index + 1)
+	default:
+		return strconv.Itoa(index + 1)
+	}
+}
+
+func toRomanUpper(n int) string {
+	vals := []int{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1}
+	syms := []string{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"}
+	var result strings.Builder
+	for i := 0; i < len(vals); i++ {
+		for n >= vals[i] {
+			result.WriteString(syms[i])
+			n -= vals[i]
+		}
+	}
+	return result.String()
+}
+
+func toRomanLower(n int) string {
+	return strings.ToLower(toRomanUpper(n))
 }
 
 func resolveField(item any, key string) (any, bool) {
