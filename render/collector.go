@@ -1,8 +1,11 @@
 package render
 
 import (
+	"regexp"
 	"strings"
 )
+
+var pTagOpenRe = regexp.MustCompile(`(?s)<p(?:\s[^>]*)?>`)
 
 func (c *Compiler) collectListItems(lines []string, start int) ([]ListItem, int, error) {
 	var items []ListItem
@@ -83,6 +86,9 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 	}
 
 	raw := strings.TrimSpace(buf.String())
+
+	raw = pTagOpenRe.ReplaceAllString(raw, "")
+	raw = strings.ReplaceAll(raw, "</p>", "")
 
 	runs, err := inlineToRuns(raw)
 	if err != nil {
