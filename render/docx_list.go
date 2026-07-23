@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -124,6 +125,44 @@ func (d *DocxRenderer) genNsid() string {
 	return fmt.Sprintf("%08X", d.nsidCounter)
 }
 
+func fixNumberingOrder(content string) string {
+	// Extract all abstractNum entries
+	abstractRe := regexp.MustCompile(`(?s)<w:abstractNum w:abstractNumId="\d+">.*?</w:abstractNum>`)
+	abstracts := abstractRe.FindAllString(content, -1)
+	if len(abstracts) == 0 {
+		return content
+	}
+
+	// Extract all num entries
+	numRe := regexp.MustCompile(`(?s)<w:num w:numId="\d+">.*?</w:num>`)
+	nums := numRe.FindAllString(content, -1)
+
+	// Remove all abstractNum and num entries from content
+	cleaned := abstractRe.ReplaceAllString(content, "")
+	cleaned = numRe.ReplaceAllString(cleaned, "")
+
+	// Find the insertion point (before </w:numbering>)
+	endTag := "</w:numbering>"
+	idx := strings.LastIndex(cleaned, endTag)
+	if idx < 0 {
+		return content
+	}
+
+	// Rebuild with correct order: all abstractNum first, then all num
+	var sb strings.Builder
+	sb.WriteString(cleaned[:idx])
+	for _, a := range abstracts {
+		sb.WriteString(a)
+		sb.WriteString("\n")
+	}
+	for _, n := range nums {
+		sb.WriteString(n)
+		sb.WriteString("\n")
+	}
+	sb.WriteString(endTag)
+	return sb.String()
+}
+
 func (d *DocxRenderer) injectOLNumEntry(numID string, numFmt string, start int) {
 	raw, ok := d.root.FileMap.Load("word/numbering.xml")
 	if !ok {
@@ -198,5 +237,6 @@ func (d *DocxRenderer) injectOLNumEntry(numID string, numFmt string, start int) 
 		return
 	}
 	content = content[:idx] + numEntry + "\n" + content[idx:]
+	content = fixNumberingOrder(content)
 	d.root.FileMap.Store("word/numbering.xml", []byte(content))
 }

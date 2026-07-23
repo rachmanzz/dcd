@@ -214,6 +214,7 @@ func (d *DocxRenderer) injectNumFmts() error {
 		}
 	}
 	content = content[:idx] + sb.String() + "\n" + content[idx:]
+	content = fixNumberingOrder(content)
 	d.root.FileMap.Store("word/numbering.xml", []byte(content))
 	d.numFmtInited = true
 	return nil
