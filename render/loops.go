@@ -143,8 +143,8 @@ func expandLoopTemplate(tmpl, varName string, item any, index int, indexType str
 		result.WriteString(tmpl[pos:start])
 		expr := tmpl[start+2 : end-2]
 
-		if expr == "loop.index" {
-			result.WriteString(strconv.Itoa(index + 1))
+		if expr == "loop.index" || expr == "index" {
+			result.WriteString(formatIndex(index, indexType))
 		} else if expr == varName {
 			result.WriteString(fmt.Sprintf("%v", item))
 		} else if strings.HasPrefix(expr, varName+".") {

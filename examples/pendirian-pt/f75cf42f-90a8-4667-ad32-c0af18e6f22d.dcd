@@ -12,7 +12,6 @@ m-b=0.87
 m-l=2.44
 m-r=0.24
 font-family="Courier New"
-line-height=2.0
 
 [style:heading-1]
 font-family="Courier New"
@@ -21,93 +20,116 @@ font-family="Courier New"
 font-family="Arial"
 font-size=16
 color=#0f4761
-space-before=8.00
-space-after=4.00
+space-before=8
+space-after=4
 
 [style:heading-3]
 font-family="Arial"
 font-size=14
 color=#0f4761
-space-before=8.00
-space-after=4.00
+space-before=8
+space-after=4
 
 [style:heading-4]
 font-family="Arial"
 color=#0f4761
 italic=true
-space-before=4.00
-space-after=2.00
+space-before=4
+space-after=2
 
 [style:heading-5]
 font-family="Arial"
 color=#0f4761
-space-before=4.00
-space-after=2.00
+space-before=4
+space-after=2
 
 [style:heading-6]
 font-family="Arial"
 color=#595959
 italic=true
-space-before=2.00
+space-before=2
+
+[style:heading-7]
+font-family="Arial"
+color=#595959
+space-before=2
+
+[style:heading-8]
+font-family="Arial"
+color=#272727
+italic=true
+
+[style:heading-9]
+font-family="Arial"
+color=#272727
+italic=true
 
 [section 0]
-name=title_page
+name=title_info
 var=info_dasar
+keys=info_dasar.tanggal_akta, info_dasar.jam_awal_akta
+formats=[info_dasar.tanggal_akta:dd-MM-yyyy, info_dasar.jam_awal_akta:HH:mm]
 
 --- BODY ---
 <w:c|b>AKTA PENDIRIAN PERSEROAN TERBATAS</w:c|b>
 <w:c|b>PT. {{info_dasar.nama_perseroan}}</w:c|b>
 <w:c|b>Nomor : {{info_dasar.nomor_akta}}</w:c|b>
-
-[section 1]
-name=opening_and_founders
-var=info_dasar, []pendiri
-keys=info_dasar.tanggal_akta, info_dasar.jam_awal_akta, pendiri.tanggal_lahir
-formats=[info_dasar.tanggal_akta:dd-MM-yyyy, info_dasar.jam_awal_akta:HH:mm, pendiri.tanggal_lahir:dd-MM-yyyy]
-
---- BODY ---
 <p>- Pada hari ini, {{info_dasar.pada_hari}}, tanggal {{info_dasar.tanggal_akta}} ({{info_dasar.tanggal_akta_terbilang}}) -------------------------</p>
 <p>- Pukul {{info_dasar.jam_awal_akta}} ({{info_dasar.jam_awal_terbilang}}) Waktu Indonesia Bagian Barat. </p>
 <p>- Menghadap kepada saya, <b>{{info_dasar.nama_notaris}}</b>, <b>{{info_dasar.gelar_notaris_text}}</b>, Notaris di {{info_dasar.lokasi_kedudukan_notaris}}, dengan dihadiri oleh para saksi yang saya, Notaris, kenal dan akan disebut pada bahagian akhir akta ini.--------------------------</p>
-<loop p from pendiri>
-<p align=justify indent=0.32 hanging=0.32>{{loop.index}}. <tab/><b>{{p.panggilan}} {{p.nama}}</b>, lahir di {{p.tempat_lahir}}, pada tanggal {{p.tanggal_lahir}} ({{p.tanggal_lahir_terbilang}}), Warga Negara Indonesia, pekerjaan {{p.pekerjaan}}, bertempat tinggal di {{p.bertempat_tinggal_kota_1st}}, {{p.bertempat_tinggal_alamat_2nd}}, Rukun Tetangga {{p.rukun_tetangga}}, Rukun Warga {{p.rukun_warga}}, Kelurahan {{p.kelurahan}}, Kecamatan {{p.kecamatan}}, {{p.kabupaten_kota}}, pemegang Kartu Tanda Penduduk {{p.provinsi_ktp}}, Nomor Induk Kependudukan {{p.nomor_induk_kependudukan}} .---------------------</p>
-</loop>
-<p align=justify indent=0.32>-<tab/>Para penghadap dikenal oleh saya, Notaris--------</p>
-<p align=justify indent=0.32>-<tab/>Para penghadap bertindak sebagaimana tersebut menerangkan, bahwa dengan tidak mengurangi izin dari yang berwenang, telah sepakat dan setuju untuk bersama-sama mendirikan suatu perseroan terbatas dengan anggaran dasar sebagaimana yang termuat dalam akta pendirian ini, (untuk selanjutnya cukup disingkat dengan "<b>Anggaran Dasar</b>") sebagai berikut:<tab/></p>
 
-[section 2]
-name=articles_1_to_7
-var=info_dasar, []kbli_items, modal
+[section 1]
+name=founders_info
+var=[]pendiri
+keys=pendiri.tanggal_lahir
+formats=[pendiri.tanggal_lahir:dd-MM-yyyy]
 
 --- BODY ---
-<p align=justify indent=0.32><b>------------- NAMA DAN TEMPAT KEDUDUKAN --------------------- Pasal 1 ----------------------</b></p>
+<loop p from pendiri>
+<p align=justify indent=0.32 hanging=0.32>{{index}}. <tab/><b>{{p.panggilan}}</b> <b>{{p.nama}}</b>, lahir di {{p.tempat_lahir}}, pada tanggal {{p.tanggal_lahir}} ({{p.tanggal_lahir_terbilang}}), Warga Negara Indonesia, pekerjaan {{p.pekerjaan}}, bertempat tinggal di {{p.bertempat_tinggal_kota_1st}}, {{p.bertempat_tinggal_alamat_2nd}}, Rukun Tetangga {{p.rukun_tetangga}}, Rukun Warga {{p.rukun_warga}}, Kelurahan {{p.kelurahan}}, Kecamatan {{p.kecamatan}}, {{p.kabupaten_kota}}, pemegang Kartu Tanda Penduduk {{p.provinsi_ktp}}, Nomor Induk Kependudukan {{p.nomor_induk_kependudukan}} .---------------------</p>
+</loop>
+<p align=justify indent=0.32>-<tab/>Para penghadap dikenal oleh saya, Notaris--------</p>
+<p align=justify indent=0.32>-<tab/>Para penghadap bertindak sebagaimana tersebut menerangkan, bahwa dengan tidak mengurangi izin dari yang berwenang, telah sepakat dan setuju untuk bersama-sama mendirikan suatu perseroan terbatas dengan anggaran dasar sebagaimana yang termuat dalam akta pendirian ini, (untuk selanjutnya cukup disingkat dengan "<b>Anggaran</b><b> Dasar</b>") sebagai berikut:<tab/></p>
+
+[section 2]
+name=articles_1_to_3
+var=info_dasar, []kbli_items
+
+--- BODY ---
+<p align=justify indent=0.32><b>------------- </b><b>NAMA DAN TEMPAT KEDUDUKAN</b><b> -------------</b><b>--------------------- </b><b>Pasal 1</b><b> ----------------------</b></p>
 <p align=justify indent=0.32 hanging=0.32>1. <tab/>Perseroan terbatas ini bernama : -------------------</p>
-<p align=justify indent=0.32 hanging=0.32>   -------------- "<b>{{info_dasar.nama_perseroan}}</b>" -------------(selanjutnya dalam Anggaran Dasar ini cukup disingkat dengan "<b>PERSEROAN</b>"), <b>berkedudukan di </b><tab/><b>{{info_dasar.lokasi_kedudukan_perseroan}}.</b>-----------------------</p>
+<p align=justify indent=0.32 hanging=0.32>-------------- "<b>{{info_dasar.nama_perseroan}}</b>" -------------(selanjutnya dalam Anggaran Dasar ini cukup disingkat dengan "<b>PERSERO</b><b>AN</b>"), <b>berkedudukan</b><b> di </b><tab/><b>{{info_dasar.lokasi_kedudukan_perseroan}}</b><b>.</b>-----------------------</p>
 <p align=justify indent=0.32 hanging=0.32>2. <tab/>Perseroan dapat membuka cabang atau perwakilan di tempat lain, baik didalam maupun diluar wilayah Republik Indonesia sebagaimana yang ditetapkan oleh Direksi, dengan persetujuan dari ... (...) orang anggota Dewan Komisaris. ---------------------------</p>
-<w:b> --------- JANGKA WAKTU BERDIRINYA PERSEROAN ----------</w:b>
-<w:b> --------------------- Pasal 2 ------------------------</w:b>
+<w:l|b>--------- JANGKA WAKTU BERDIRINYA PERSEROAN ----------</w:l|b>
+<w:l|b>--------------------- Pasal 2 ------------------------</w:l|b>
 <ul>
 <li>Perseroan didirikan untuk jangka waktu tidak terbatas. ------------------------------------------</li>
 </ul>
-<w:b>--------- MAKSUD DAN TUJUAN SERTA KEGIATAN USAHA ------</w:b>
-<w:b>---------------------- Pasal 3 ------------------------</w:b>
-<p indent=0.32 hanging=0.32>1. <tab/>Maksud dan tujuan Perseroan ialah berusaha dalam bidang : -------------------------------------------- {{info_dasar.bidang_usaha}}. ------------------------</p>
+<w:l|b>--------- MAKSUD DAN TUJUAN SERTA KEGIATAN USAHA ------</w:l|b>
+<w:l|b>---------------------- Pasal 3 ------------------------</w:l|b>
+<p indent=0.32 hanging=0.32>1. <tab/>Maksud dan tujuan Perseroan ialah berusaha dalam bidang : -------------------------------------------- {{info_dasar.kegiatan_usaha}}. ------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>2. <tab/>Untuk mencapai maksud dan tujuan tersebut diatas Perseroan dapat melaksanakan kegiatan usaha sebagai berikut:</p>
-<loop k from kbli_items>
-<p align=justify indent=0.63 hanging=0.31>{{k.letter}}. <b>{{k.nama_kbli}} ----------</b></p>
-<p align=justify indent=0.63 hanging=0.31><b>   (KBLI {{k.kode_kbli}}).------------------------------------</b></p>
-<p align=justify indent=0.63 hanging=0.31><tab/>{{k.deskripsi_kbli}}</p>
+<loop item from kbli_items indexType=a>
+<p align=justify indent=0.63 hanging=0.31>{{index}}. <b>{{item.nama_kbli}} ----------</b></p>
+<p align=justify indent=0.63 hanging=0.31><b>(KBLI </b><b>{{item.kode_kbli}}</b><b>).</b><b>------------------------------------</b></p>
+<p align=justify indent=0.63 hanging=0.31><tab/>{{item.deskripsi_kbli}}</p>
 </loop>
-<w:b>------------------------ MODAL ------------------------</w:b>
-<w:b>----------------------- Pasal 4 -----------------------</w:b>
+
+[section 3]
+name=articles_capital
+var=modal
+
+--- BODY ---
+<w:l|b>------------------------ MODAL ------------------------</w:l|b>
+<w:l|b>----------------------- Pasal 4 -----------------------</w:l|b>
 <p indent=0.32 hanging=0.32>1. <tab/>Modal dasar Perseroan berjumlah Rp. {{modal.modal_dasar_rupiah}},- ({{modal.modal_dasar_rupiah_terbilang}} Rupiah), terbagi atas {{modal.modal_dasar_total_saham}} ({{modal.modal_dasar_total_saham_terbilang}}) saham, masing-masing saham bernilai nominal Rp. {{modal.nilai_nominal_perlembar_saham}},- ({{modal.nilai_nominal_perlembar_saham_terbilang}}Rupiah). ----------------------------------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>2. <tab/>Dari modal dasar tersebut telah ditempatkan dan -disetor {{modal.modal_disetor_persen}} % ({{modal.modal_disetor_persen_terbilang}} persen) atau sejumlah {{modal.modal_disetor_saham}} ({{modal.modal_disetor_saham_terbilang}}) saham, ----- dengan nilai nominal seluruhnya sebesar --------- Rp.{{modal.modal_disetor_nominal_seluruhnya}},- ({{modal.modal_disetor_nominal_seluruhnya_terbilang}} rupiah) oleh para pendiri yang telah mengambil bagian saham dan rincian serta nilai nominal saham akan disebutkan pada akhir akta. -------------------</p>
 <p align=justify indent=0.32 hanging=0.32>3. <tab/>Saham-saham yang masih dalam simpanan akan dikeluarkan oleh perseroan menurut keperluan modal Perseroan, dengan persetujuan Rapat Umum Pemegang Saham. ---------------------------------------------</p>
 <p align=justify indent=0.32>Para pemegang saham yang namanya tercatat dalam Daftar Pemegang Saham mempunyai hak terlebih dahulu untuk mengambil bagian atas saham yang hendak dikeluarkan itu dalam jangka waktu 14 (empatbelas) hari sejak tanggal penawaran dila-kukan dan masing-masing pemegang saham berhak mengambil bagian seimbang dengan jumlah saham yang mereka miliki (pro-porsional).------------------------------------</p>
 <p align=justify indent=0.32>Apabila setelah dilakukan penawaran ternyata masih ada sisa saham yang belum diambil bagian maka Direksi berhak mena-warkan sisa saham tersebut kepada pemegang saham yang masih berminat. ---------</p>
 <p align=justify indent=0.35>Apabila setelah lewat jangka waktu 14 (empatbelas) hari terhitung sejak penawaran kepada pemegang saham tersebut masih ada sisa saham yang tidak diambil bagian oleh pemegang saham, Direksi harus menawarkannya kepada karyawan perseroan yang berminat terlebih dahulu dan bila setelah penawaran pada karyawan perseroan itu masih ada sisa saham yang tidak diambil bagian, Direksi berhak secara bebas menawarkan sisa saham tersebut kepada pihak lain. ----------------------------------------------</p>
-<w:b>------------------------ SAHAM ------------------------</w:b>
-<w:b>----------------------- Pasal 5 -----------------------</w:b>
+<w:l|b>------------------------ SAHAM ------------------------</w:l|b>
+<w:l|b>----------------------- Pasal 5 -----------------------</w:l|b>
 <p indent=0.32 hanging=0.32>1. <tab/>Semua saham yang dikeluarkan oleh Perseroan adalah saham atas nama. -----------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>2. <tab/>Yang boleh memiliki dan mempergunakan hak atas saham hanyalah Warga Negara Indonesia atau badan hukum Indonesia. -----------------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>3. <tab/>Bukti pemilikan saham dapat berupa surat saham. ----</p>
@@ -115,91 +137,91 @@ var=info_dasar, []kbli_items, modal
 <p align=justify indent=0.32 hanging=0.32>5. <tab/>Jika dikeluarkan surat saham, maka untuk setiap -surat saham diberi sehelai surat saham -------------</p>
 <p align=justify indent=0.32 hanging=0.32>6. Surat kolektif saham dapat dikeluarkan sebagai -- bukti pemilikan 2 (dua) atau lebih saham yang --- dimiliki oleh seorang pemegang saham. --------------</p>
 <p align=justify indent=0.32 hanging=0.32>7. Pada surat saham harus dicantumkan sekurangnya : ---</p>
-<p align=justify indent=0.32 hanging=0.32><tab/>a. nama dan alamat pemegang saham; -----------------</p>
-<p align=justify indent=0.32 hanging=0.32><tab/>b. nomor surat saham; ----------------------------- </p>
-<p align=justify indent=0.32 hanging=0.32><tab/>c. nilai nominal saham; ----------------------------- </p>
+<p align=justify indent=0.32 hanging=0.32><tab/>a. nama dan alamat pemegang saham; ------------------</p>
+<p align=justify indent=0.32 hanging=0.32><tab/>b. nomor surat saham; ------------------</p>
+<p align=justify indent=0.32 hanging=0.32><tab/>c. nilai nominal saham; ------------------</p>
 <p align=justify indent=0.32 hanging=0.32><tab/>d. tanggal pengeluaran surat saham. ----------------</p>
 <p align=justify indent=0.32 hanging=0.32>8. Pada surat kolektif saham sekurangnya harus ----- dicantumkan : --------------------------------------</p>
-<p align=justify indent=0.32 hanging=0.32><tab/> a. nama dan alamat pemegang saham; ---------------</p>
-<p align=justify indent=0.32 hanging=0.32><tab/> b. nomor surat kolektif saham; -------------------</p>
-<p align=justify indent=0.32 hanging=0.32><tab/> c. nomor surat saham dan jumlah saham; ------------</p>
-<p align=justify indent=0.32 hanging=0.32><tab/> d. nilai nominal saham; --------------------------</p>
-<p align=justify indent=0.32 hanging=0.32><tab/> e. tanggal pengeluaran surat kolektif saham. ------</p>
+<p align=justify indent=0.32 hanging=0.32><tab/>a. nama dan alamat pemegang saham; ---------------</p>
+<p align=justify indent=0.32 hanging=0.32><tab/>b. nomor surat kolektif saham; -------------------</p>
+<p align=justify indent=0.32 hanging=0.32><tab/>c. nomor surat saham dan jumlah saham; ------------</p>
+<p align=justify indent=0.32 hanging=0.32><tab/>d. nilai nominal saham; --------------------------</p>
+<p align=justify indent=0.32 hanging=0.32><tab/>e. tanggal pengeluaran surat kolektif saham. ------</p>
 <p align=justify indent=0.32 hanging=0.32>9. Surat saham dan surat kolektif saham harus ------ ditandatangani oleh seorang Direktur. --------------</p>
 <p align=justify indent=0.32 hanging=0.32>10. a. Saham memberikan hak kepada pemiliknya untuk :--</p>
-<p align=justify indent=0.63 hanging=0.32><tab/><tab/>(i)   menghadiri dan mengeluarkan suara----------</p>
-<p align=justify indent=0.63 hanging=0.32>         dalam   Rapat Umum Pemegang Saham; ---------</p>
-<p align=justify indent=0.32 hanging=0.32><tab/><tab/>(ii)  menerima pembayaran dividen dan sisa ------</p>
-<p align=justify indent=0.32 hanging=0.32>            kekayaan hasil likuidasi; -----------------</p>
+<p align=justify indent=0.63 hanging=0.32><tab/><tab/>(i) <tab/>menghadiri dan mengeluarkan suara----------</p>
+<p align=justify indent=0.63 hanging=0.32>dalam <tab/>Rapat Umum Pemegang Saham; ---------</p>
+<p align=justify indent=0.32 hanging=0.32><tab/><tab/>(ii) <tab/>menerima pembayaran dividen dan sisa ------</p>
+<p align=justify indent=0.32 hanging=0.32>kekayaan hasil likuidasi; -----------------</p>
 <p align=justify indent=0.32 hanging=0.32><tab/><tab/>(iii) menjalankan hak lainnya berdasarkan –------</p>
-<p align=justify indent=0.32 hanging=0.32>            Undang-Undang nomor 40 tahun 2007 --------</p>
-<p align=justify indent=0.32 hanging=0.32>            (duaribu tujuh) tentang Perseroan --------</p>
-<p align=justify indent=0.32 hanging=0.32>            Terbatas (selanjutnya disebut -----------</p>
-<p align=justify indent=0.32 hanging=0.32>            Undang-Undang). --------------------------</p>
-<p align=justify indent=0.32 hanging=0.32><tab/> b. Ketentuan huruf a tersebut berlaku setelah ----</p>
-<p align=justify indent=0.32 hanging=0.32> <tab/><tab/><tab/>saham dicatat dalam Daftar Pemegang Saham atas--</p>
-<p align=justify indent=0.32 hanging=0.32>       nama pemiliknya. -------------------------------</p>
-<p align=justify indent=0.32 hanging=0.32><tab/> c. Ketentuan huruf a butir (i) dan butir (iii) –---</p>
+<p align=justify indent=0.32 hanging=0.32>Undang-Undang nomor 40 tahun 2007 --------</p>
+<p align=justify indent=0.32 hanging=0.32>(duaribu tujuh) tentang Perseroan --------</p>
+<p align=justify indent=0.32 hanging=0.32>Terbatas (selanjutnya disebut ---------</p>
+<p align=justify indent=0.32 hanging=0.32>Undang-Undang). ---------------------------</p>
+<p align=justify indent=0.32 hanging=0.32><tab/>b. Ketentuan huruf a tersebut berlaku setelah ------</p>
+<p align=justify indent=0.32 hanging=0.32><tab/><tab/><tab/>saham dicatat dalam Daftar Pemegang Saham atas--</p>
+<p align=justify indent=0.32 hanging=0.32>nama pemiliknya. -------------------------------</p>
+<p align=justify indent=0.32 hanging=0.32><tab/>c. Ketentuan huruf a butir (i) dan butir (iii) –---</p>
 <p align=justify indent=0.32 hanging=0.32><tab/><tab/><tab/>tidak berlaku bagi klasifikasi saham tertentu ---</p>
-<p align=justify indent=0.32 hanging=0.32>       sebagaimana ditetapkan dalam Undang-Undang. –---</p>
-<p align=justify indent=0.32 hanging=0.32>    d. Setiap saham memberikan kepada pemiliknya hak --</p>
-<p align=justify indent=0.32 hanging=0.32>       yang tidak dapat dibagi. -----------------------</p>
-<p align=justify indent=0.32 hanging=0.32>    e. Dalam hal 1 (satu) saham dimiliki oleh lebih –--</p>
-<p align=justify indent=0.32 hanging=0.32>       dari 1 (satu) orang, hak yang timbul dari ------</p>
-<p align=justify indent=0.32 hanging=0.32>       saham tersebut digunakan dengan cara menunjuk --</p>
-<p align=justify indent=0.32 hanging=0.32>       1 (satu) orang sebagai wakil bersama. ---------</p>
-<p align=justify indent=0.32 hanging=0.32><b>-------------- --- PENGGANTI SURAT SAHAM ----------------</b></p>
-<w:b>------------------------ Pasal 6 ----------------------</w:b>
+<p align=justify indent=0.32 hanging=0.32>sebagaimana ditetapkan dalam Undang-Undang. –---</p>
+<p align=justify indent=0.32 hanging=0.32><tab/>d. Setiap saham memberikan kepada pemiliknya hak --</p>
+<p align=justify indent=0.32 hanging=0.32>yang tidak dapat dibagi. --------------------</p>
+<p align=justify indent=0.32 hanging=0.32>e. Dalam hal 1 (satu) saham dimiliki oleh lebih --–</p>
+<p align=justify indent=0.32 hanging=0.32>dari 1 (satu) orang, hak yang timbul dari --------</p>
+<p align=justify indent=0.32 hanging=0.32>saham tersebut digunakan dengan cara menunjuk --</p>
+<p align=justify indent=0.32 hanging=0.32>1 (satu) orang sebagai wakil bersama. ---------</p>
+<w:l|b>-------------- PENGGANTI SURAT SAHAM ----------------</w:l|b>
+<w:l|b>------------------------ Pasal 6 ----------------------</w:l|b>
 <p indent=0.32 hanging=0.32>1. <tab/>Apabila surat saham rusak atau tidak dapat dipakai lagi, maka atas permintaan mereka yang berkepentingan Direksi akan mengeluarkan surat saham pengganti. -----------------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>2. <tab/>Surat saham sebagaimana dimaksud dalam ayat 1 kemudian dihapuskan dan oleh Direksi dibuat berita acara untuk dilaporkan dalam Rapat Umum Pemegang Saham berikutnya. ----------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>3. <tab/>Apabila surat saham hilang maka atas permintaan mereka yang berkepentingan, Direksi akan mengeluarkan surat saham pengganti setelah menurut pendapat Direksi kehilangan itu cukup dibuktikan dan dengan jaminan yang dipandang perlu oleh Direksi untuk tiap peristiwa yang khusus. ------------------</p>
 <p align=justify indent=0.32 hanging=0.32>4. <tab/>Setelah pengganti surat saham tersebut dikeluarkan, maka, asli surat saham tidak berlaku lagi terhadap Perseroan. -----------------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>5. <tab/>Semua biaya untuk pengeluaran pengganti surat saham itu ditanggung oleh pemegang saham yang berkepentingan. ------------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>6. <tab/>Ketentuan dalam pasal 6 ini, mutatis-mutandis juga berlaku bagi pengeluaran pengganti surat kolektif saham. ---------------------------------------------</p>
-<w:b>--------------- PEMINDAHAN HAK ATAS SAHAM -------------</w:b>
-<w:b>------------------------ Pasal 7 ----------------------</w:b>
+<w:l|b>--------------- PEMINDAHAN HAK ATAS SAHAM -------------</w:l|b>
+<w:l|b>------------------------ Pasal 7 ----------------------</w:l|b>
 <p indent=0.32 hanging=0.32>1. <tab/>Pemindahan hak atas saham harus berdasarkan akta pemindahan hak yang ditanda-tangani oleh yang memindahkan dan yang menerima pemindahan atau wakil mereka yang sah. -----------------------------------</p>
-<p align=justify indent=0.32 hanging=0.32>2. <tab/>Pemegang saham yang hendak memindahkan hak atas – saham harus menawarkan terlebih dahulu kepada --- pemegang saham lain dengan menyebutkan harga ---- serta persyaratan pemindahan hak dan ------------ memberitahukan kepada Direksi secara tertulis --- tentang penawaran tersebut. -----------------------</p>
-<p align=justify indent=0.32 hanging=0.32>   -Dalam waktu 30 (tigapuluh) hari sejak penawaran, para pemegang saham lainnya dapat menyetujui ---- pemindahan hak, dengan ketentuan apabila telah -- lewat waktu 30 (tigapuluh) hari ternyata saham -- yang ditawarkan tidak disetujui pemindahan haknya oleh pemegang saham lainnya, saham tersebut dapat ditawarkan kepada pihak ketiga yang disetujui --- oleh Rapat Umum Pemegang Saham.---------------------</p>
+<p align=justify indent=0.32 hanging=0.32>2. <tab/>Pemegang saham yang hendak memindahkan hak atas – saham harus menawarkan terlebih dahulu kepada --- pemegang saham lain dengan menyebutkan harga ---- serta persyaratan pemindahan hak dan ------------ memberitahukan kepada Direksi secara tertulis --- tentang penawaran tersebut. ----------------------</p>
+<p align=justify indent=0.32 hanging=0.32>-Dalam waktu 30 (tigapuluh) hari sejak penawaran, para pemegang saham lainnya dapat menyetujui ---- pemindahan hak, dengan ketentuan apabila telah -- lewat waktu 30 (tigapuluh) hari ternyata saham -- yang ditawarkan tidak disetujui pemindahan haknya oleh pemegang saham lainnya, saham tersebut dapat ditawarkan kepada pihak ketiga yang disetujui --- oleh Rapat Umum Pemegang Saham.---------------------</p>
 <p align=justify indent=0.32 hanging=0.32>3. <tab/>Pemindahan hak atas saham harus mendapat -------- persetujuan dari instansi yang berwenang, jika -- peraturan perundang-undangan mensyaratkan hal --- tersebut. ------------------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>4. <tab/>Mulai hari panggilan Rapat Umum Pemegang Saham -- sampai dengan hari dilaksanakan Rapat Umum ------ Pemegang Saham, pemindahan hak atas saham tidak - diperkenankan.--------------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>5. <tab/>Apabila karena warisan, perkawinan atau sebab --- lain saham tidak lagi menjadi milik Warga Negara Indonesia atau badan hukum Indonesia, maka dalam jangka waktu 1 (satu) tahun orang atau badan ---- hukum tersebut wajib memindahkan hak atas ------- sahamnya kepada Warga Negara Indonesia atau badan hukum Indonesia, sesuai ketentuan Anggaran Dasar.---</p>
 
-[section 3]
-name=articles_8_to_16
+[section 4]
+name=articles_governance
 
 --- BODY ---
-<w:b>------------- RAPAT UMUM PEMEGANG SAHAM ----------</w:b>
-<w:b>----------------------- Pasal 8 ------------------------</w:b>
-<ol type=1>
-<li>Rapat Umum Pemegang Saham (selanjutnya disebut <b>RUPS</b>) adalah : ---------------------------------- a. RUPS tahunan. ------------------------------------ b. RUPS lainnya, yang dalam Anggaran Dasar ini --         disebut juga RUPS luar biasa.-----------------</li>
+<w:l|b>------------- RAPAT UMUM PEMEGANG SAHAM ----------</w:l|b>
+<w:l|b>----------------------- Pasal 8 ----------------------</w:l|b>
+<ol>
+<li>Rapat Umum Pemegang Saham (selanjutnya disebut -- <b>RUPS</b>) adalah : ---------------------------------- a. RUPS tahunan. ------------------------------------ b. RUPS lainnya, yang dalam Anggaran Dasar ini -- disebut juga RUPS luar biasa.-----------------</li>
 <li>Istilah RUPS dalam Anggaran Dasar ini berarti – keduanya, yaitu RUPS tahunan dan RUPS luar biasa, kecuali dengan tegas ditentukan lain. -----------</li>
-<li>Dalam RUPS tahunan : ---------------------------- a. Direksi menyampaikan : -------------------------   -laporan tahunan yang telah ditelaah oleh -----          Dewan Komisaris untuk mendapat persetujuan --         -RUPS; ---------------------------------------         -laporan keuangan untuk mendapat pengesahan --          rapat; -------------------------------------      b. Ditetapkan penggunaan laba, jika Perseroan ---         mempunyai saldo laba yang positif. -----------      c. Diputuskan mata acara RUPS lainnya yang telah-         diajukan sebagaimana mestinya dengan ---------         memperhatikan ketentuan Anggaran Dasar. ------</li>
+<li>Dalam RUPS tahunan : ---------------------------- a. Direksi menyampaikan : ------------------------- -laporan tahunan yang telah ditelaah oleh -----          Dewan Komisaris untuk mendapat persetujuan --         -RUPS; ---------------------------------------         -laporan keuangan untuk mendapat pengesahan --          rapat; -------------------------------------      b. Ditetapkan penggunaan laba, jika Perseroan ---         mempunyai saldo laba yang positif. -----------      c. Diputuskan mata acara RUPS lainnya yang telah-         diajukan sebagaimana mestinya dengan ---------         memperhatikan ketentuan Anggaran Dasar. ------</li>
 <li>Persetujuan laporan tahunan dan pengesahan ----- laporan keuangan oleh RUPS tahunan berarti ------ memberikan pelunasan dan pembebasan tanggung ---- jawab sepenuhnya kepada anggota Direksi dan Dewan komisaris atas pengurusan dan pengawasan yang --- telah dijalankan selama tahun buku yang lalu, --- sejauh tindakan tersebut tercermin dalam Laporan- Tahunan dan Laporan Keuangan.------------------</li>
 <li>RUPS luar biasa dapat diselenggarakan ----------- sewaktu-waktu berdasarkan kebutuhan untuk ------- membicarakan dan memutuskan mata acara rapat ---- kecuali mata acara rapat yang dimaksud pada ----- ayat 3 huruf a dan huruf b, dengan memperhatikan peraturan perundang-undangan serta Anggaran ----- Dasar.-------------------------------------------</li>
 </ol>
-<w:b>----- TEMPAT, PEMANGGILAN DAN PIMPINAN RUPS --------</w:b>
-<w:b>----------------------- Pasal 9 ------------------------ </w:b>
-<ol type=1>
+<w:l|b>----- TEMPAT, PEMANGGILAN DAN PIMPINAN RUPS --------</w:l|b>
+<w:l|b>--------------------- Pasal 9 ----------------------</w:l|b>
+<ol>
 <li>RUPS diadakan di tempat kedudukan Perseroan atau di tempat Perseroan melakukan kegiatan usahanya - yang utama.---------------------------------------</li>
 <li>RUPS diselenggarakan dengan melakukan pemanggilan terlebih dahulu kepada para pemegang saham dengan surat tercatat dan/atau dengan iklan dalam surat -kabar. -------------------------------------------</li>
-<li>a.Direksi melakukan pemanggilan kepada pemegang –   saham sebelum menyelenggarakan RUPS. ----------  b.Dalam hal tertentu, sebagaimana diatur dalam –   Undang-Undang, pemanggilan RUPS dapat dilakukan    oleh Dewan Komisaris atau pemegang saham ------   berdasarkan penetapan ketua pengadilan negeri.-</li>
+<li>a.Direksi melakukan pemanggilan kepada pemegang –   saham sebelum menyelenggarakan RUPS. ---------- b.Dalam hal tertentu, sebagaimana diatur dalam –   Undang-Undang, pemanggilan RUPS dapat dilakukan    oleh Dewan Komisaris atau pemegang saham ------   berdasarkan penetapan ketua pengadilan negeri.-</li>
 <li>Pemanggilan dilakukan paling lambat 14 ---------- (empatbelas) hari sebelum tanggal RUPS diadakan – dengan tidak memperhitungkan tanggal pemanggilan- dan tanggal RUPS diadakan. ----------------------</li>
 <li>Panggilan Rapat Umum Pemegang Saham harus ------- mencantumkan tanggal, waktu, tempat dan mata ---- acara rapat, dengan disertai pemberitahuan, bahwa bahan yang akan dibicarakan dalam rapat tersedia di kantor Perseroan mulai sejak tanggal dilakukan pemanggilan RUPS sampai dengan tanggal RUPS ----- diadakan. ---------------------------------------</li>
 <li>Dalam hal pemanggilan tidak sesuai dengan ------- ketentuan sebagaimana dimaksud dalam ayat 2, ---- ayat 4 dan ayat 5, keputusan RUPS tetap sah, ---- jika semua pemegang saham dengan hak suara hadir- atau diwakili dalam RUPS dan keputusan tersebut – disetujui dengan suara bulat. -------------------</li>
 <li>Rapat Umum Pemegang Saham dipimpin oleh Direktur Utama. Dalam hal Direktur Utama tidak ada atau – berhalangan karena sebab apapun, hal tersebut --- tidak perlu dibuktikan kepada pihak ketiga, rapat dipimpin oleh seorang Direktur. ----------------- -Dalam hal Direktur tidak ada atau berhalangan – karena sebab apapun, hal tersebut tidak perlu --- dibuktikan kepada pihak ketiga, rapat dipimpin – oleh salah seorang anggota Komisaris. ----------- -Dalam hal semua anggota Komisaris tidak hadir – atau berhalangan karena sebab apapun, hal ------- tersebut tidak perlu dibuktikan kepada pihak ---- ketiga, maka rapat dipimpin oleh seorang yang --- dipilih oleh dan dari antara mereka yang hadir – dalam rapat. ------------------------------------</li>
 </ol>
-<w:b>-------- KUORUM, HAK SUARA, DAN KEPUTUSAN RUPS -------- </w:b>
-<w:b>--------------------- Pasal 10 ------------------------</w:b>
-<ol type=1>
+<w:l|b>-------- KUORUM, HAK SUARA, DAN KEPUTUSAN RUPS -------- </w:l|b>
+<w:l|b>--------------------- Pasal 10 ------------------------</w:l|b>
+<ol>
 <li>RUPS dapat dilangsungkan apabila kuorum kehadiran sebagaimana disyaratkan dalam Undang-Undang telah dipenuhi. ---------------------------------------</li>
-<li>Pemungutan suara mengenai diri orang dilakukan – dengan surat tertutup yang tidak ditandatangani – dan mengenai hal lain secara lisan, kecuali ----- apabila ketua RUPS menentukan lain tanpa ada ---- keberatan dari pemegang saham yang hadir dalam – RUPS. -------------------------------------------</li>
+<li>Pemungutan suara mengenai diri orang dilakukan – dengan surat tertutup yang tidak ditandatangani – dan mengenai hal lain secara lisan, kecuali ----- apabila ketua RUPS menentukan lain tanpa ---- ada keberatan dari pemegang saham yang hadir dalam – RUPS. -------------------------------------------</li>
 <li>Suara blanko atau suara yang tidak sah dianggap – tidak ada dan tidak dihitung dalam menentukan --- jumlah suara yang dikeluarkan dalam RUPS. -------</li>
 <li>RUPS dapat mengambil keputusan berdasarkan ------ musyawarah untuk mufakat atau berdasarkan suara – setuju dari jumlah suara yang dikeluarkan dalam – RUPS sebagaimana ditentukan dalam Undang-Undang.-</li>
 <li>Kuorum untuk perubahan Anggaran Dasar, ---------- penggabungan, peleburan, pengambilalihan atau --- pemisahan, pembubaran Perseroan, dan mengalihkan- atau menjadikan jaminan utang yang melebihi dari- 50% (limapuluh persen) jumlah kekayaan Perseroan- diatur berdasarkan Undang-Undang nomor 40 tahun – 2007 (duaribu tujuh) tentang Perseroan Terbatas.-</li>
 </ol>
-<w:b>----------------------- DIREKSI -----------------------</w:b>
-<w:b>----------------------- Pasal 11 ----------------------</w:b>
+<w:l|b>----------------------- DIREKSI -----------------------</w:l|b>
+<w:l|b>----------------------- Pasal 11 ----------------------</w:l|b>
 <p indent=0.32 hanging=0.32>1. <tab/>Perseroan diurus dan dipimpin oleh suatu Direksi yang terdiri dari seorang Direktur atau lebih, apabila diangkat lebih dari seorang Direktur, maka seorang diantaranya dapat diangkat sebagai Presiden Direktur. ------------------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>2. <tab/>Yang boleh diangkat sebagai anggota Direksi hanyalah Warga Negara Indonesia yang memenuhi persyaratan sesuai peraturan perundang-undangan yang berlaku. --</p>
 <p align=justify indent=0.32 hanging=0.32>3. <tab/>Para anggota Direksi diangkat oleh Rapat Umum Pemegang Saham, masing-masing untuk jangka waktu 5 (lima) tahun dan dengan tidak mengurangi hak Rapat Umum Pemegang Saham untuk memberhentikannya sewaktu-waktu. ---------------------------------------------</p>
@@ -213,34 +235,34 @@ name=articles_8_to_16
 <p align=justify indent=0.63 hanging=0.31>c.<tab/>tidak lagi memenuhi persyaratan perundang-undangan yang berlaku; --------------------------</p>
 <p align=justify indent=0.63 hanging=0.31>d.<tab/>meninggal dunia; --------------------------------</p>
 <p align=justify indent=0.63 hanging=0.31>e.<tab/>diberhentikan berdasarkan keputusan Rapat Umum Pemegang Saham. ---------------------------------</p>
-<w:b>-------------- TUGAS DAN WEWENANG DIREKSI -------------</w:b>
-<w:b>----------------------- Pasal 12 ----------------------</w:b>
+<w:l|b>-------------- TUGAS DAN WEWENANG DIREKSI -------------</w:l|b>
+<w:l|b>----------------------- Pasal 12 ----------------------</w:l|b>
 <p align=justify indent=0.32 hanging=0.32>1. <tab/>Direksi berhak mewakili Perseroan didalam dan diluar Pengadilan tentang segala hal dan dalam segala kejadian, mengikat Perseroan dengan pihak lain dan pihak lain dengan Perseroan, serta menjalankan segala tindakan, baik yang menge-nai kepengurusan maupun kepemilikan, akan tetapi dengan pembatasan bahwa untuk : --------------------------------------</p>
 <p align=justify indent=0.63 hanging=0.31>a. <tab/>meminjam atau meminjamkan uang atas nama Perseroan (tidak termasuk mengambil uang Perseroan di bank); -----------------------------</p>
 <p align=justify indent=0.63 hanging=0.31>b. <tab/>mendirikan suatu usaha baru atau turut serta pada perusahaan lain baik di dalam maupun di luar negeri; -----------------------------------------</p>
 <p align=justify indent=0.32>-<tab/>harus dengan persetujuan Dewan Komisaris. -------</p>
 <p align=justify>2. a. Direktur Utama berhak dan berwenang bertindak ---</p>
-<p align=justify>      untuk dan atas nama Direksi serta mewakili ------</p>
-<p align=justify>      Perseroan. ------------------------------------</p>
-<p align=justify>   b. Dalam hal Direktur Utama tidak hadir atau ------</p>
-<p align=justify>      berhalangan karena sebab apapun juga, yang ------ </p>
-<p align=justify>      tidak perlu dibuktikan kepada pihak ketiga, ----- </p>
-<p align=justify>      maka salah seorang anggota Direksi lainnya ------</p>
-<p align=justify>      berhak dan berwenang bertindak untuk dan atas ---</p>
-<p align=justify>      nama Direksi serta mewakili Perseroan. ----------</p>
-<p align=justify>3. Dalam hal hanya ada seorang Direktur, segala -------- </p>
-<p align=justify>   tugas dan wewenang yang diberikan kepada Direktur --</p>
-<p align=justify>   Utama dalam Anggaran Dasar ini berlaku pula -------</p>
-<p align=justify>   baginya. -------------------------------------------</p>
-<w:b>--------------------- RAPAT DIREKSI -------------------</w:b>
-<w:b>------------------------ Pasal 13 ---------------------</w:b>
+<p align=justify>untuk dan atas nama Direksi serta mewakili ------</p>
+<p align=justify>Perseroan. --------------------------------------</p>
+<p align=justify>b. Dalam hal Direktur Utama tidak hadir atau --------</p>
+<p align=justify>berhalangan karena sebab apapun juga, yang ------</p>
+<p align=justify>tidak perlu dibuktikan kepada pihak ketiga, -----</p>
+<p align=justify>maka salah seorang anggota Direksi lainnya ------</p>
+<p align=justify>berhak dan berwenang bertindak untuk dan atas ---</p>
+<p align=justify>nama Direksi serta mewakili Perseroan. ----------</p>
+<p align=justify>3. Dalam hal hanya ada seorang Direktur, segala --------</p>
+<p align=justify>tugas dan wewenang yang diberikan kepada Direktur --</p>
+<p align=justify>Utama dalam Anggaran Dasar ini berlaku pula ---------</p>
+<p align=justify>baginya. -------------------------------------------</p>
+<w:l|b>--------------------- RAPAT DIREKSI -------------------</w:l|b>
+<w:l|b>------------------------ Pasal 13 ---------------------</w:l|b>
 <p indent=0.32 hanging=0.32>1. <tab/>Penyelenggaraan Rapat Direksi dapat dilakukan setiap waktu apabila dipandangan perlu : -------------</p>
-<p indent=0.32 hanging=0.32>   a. oleh seorang atau lebih anggota Direksi; ------- b. atas permintaan tertulis dari seorang atau ---</p>
-<p indent=0.32 hanging=0.32>      lebih anggota Dewan Komisaris; atau ------------- </p>
-<p indent=0.32 hanging=0.32>   c. atas permintaan tertulis dari 1 (satu) orang ----</p>
-<p indent=0.32 hanging=0.32>      atau lebih pemegang saham yang bersama-sama –----</p>
-<p indent=0.32 hanging=0.32>      mewakili 1/10 (satu per sepuluh) atau lebih –----</p>
-<p indent=0.32 hanging=0.32>      dari jumlah seluruh saham dengan hak suara. -----</p>
+<p indent=0.32 hanging=0.32>a. oleh seorang atau lebih anggota Direksi; ------- b. atas permintaan tertulis dari seorang atau ---</p>
+<p indent=0.32 hanging=0.32>lebih anggota Dewan Komisaris; atau ------------- </p>
+<p indent=0.32 hanging=0.32>c. atas permintaan tertulis dari 1 (satu) orang ---–</p>
+<p indent=0.32 hanging=0.32>atau lebih pemegang saham yang bersama-sama –----</p>
+<p indent=0.32 hanging=0.32>mewakili 1/10 (satu per sepuluh) atau lebih –----</p>
+<p indent=0.32 hanging=0.32>dari jumlah seluruh saham dengan hak suara. -----</p>
 <p align=justify indent=0.32 hanging=0.32>2. <tab/>Panggilan Rapat Direksi dilakukan oleh anggota Direksi yang berhak bertindak untuk dan atas nama Direksi. -------------------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>3. <tab/>Panggilan Rapat Direksi harus disampaikan dengan surat tercatat atau dengan surat yang disampaikan langsung kepada setiap anggota Direksi dengan mendapat tanda terima paling lambat 14 (empatbelas) hari sebelum rapat diadakan, dengan tidak memperhitungkan tanggal panggilan dan tanggal rapat.----------------------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>4. <tab/>Panggilan rapat itu harus mencantumkan acara, tanggal, waktu dan tempat rapat. -------------------</p>
@@ -255,8 +277,8 @@ name=articles_8_to_16
 <p align=justify indent=0.63 hanging=0.31>c. <tab/>Suara blanko dan suara yang tidak sah dianggap tidak dikeluarkan secara sah dan dianggap tidak ada serta tidak dihitung dalam menentukan jumlah suara yang dikeluarkan. -------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>12.Direksi dapat juga mengambil keputusan yang sah tanpa mengadakan Rapat Direksi, dengan ketentuan semua anggota Direksi telah diberitahu secara tertulis dan semua anggota Direksi memberikan persetujuan mengenai usul yang diajukan secara tertulis serta menandatangani persetujuan tersebut.-</p>
 <p align=justify indent=0.32>-<tab/>Keputusan yang diambil dengan cara demikian mempunyai kekuatan yang sama dengan keputusan yang diambil dengan sah dalam Rapat Direksi. ------------</p>
-<w:b>-------------------- DEWAN KOMISARIS -----------------</w:b>
-<w:b>------------------------ Pasal 14 ---------------------</w:b>
+<w:l|b>-------------------- DEWAN KOMISARIS -----------------</w:l|b>
+<w:l|b>------------------------ Pasal 14 ---------------------</w:l|b>
 <p indent=0.32 hanging=0.32>1. <tab/>Komisaris terdiri dari seorang atau lebih anggota Komisaris, apabila diangkat lebih dari seorang anggota Komisaris, maka seorang diantaranya dapat diangkat sebagai Presiden Komisaris.----------------</p>
 <p align=justify indent=0.32 hanging=0.32>2. <tab/>Yang boleh diangkat sebagai anggota Komisaris hanya Warga Negara Indonesia yang memenuhi persyaratan yang ditentukan peraturan perundang-undangan yang berlaku. -------------------------------------------</p>
 <p align=justify indent=0.32 hanging=0.32>3. <tab/>Anggota Komisaris diangkat oleh Rapat Umum Pemegang Saham untuk jangka waktu 5 (lima) tahun, dengan tidak mengurangi hak Rapat Umum Pemegang Saham untuk memberhentikan sewaktu-waktu. ----------------------</p>
@@ -269,89 +291,89 @@ name=articles_8_to_16
 <p align=justify indent=0.63 hanging=0.31>c. <tab/>tidak lagi memenuhi persyaratan perundang-undangan yang berlaku; --------------------------</p>
 <p align=justify indent=0.63 hanging=0.31>d. <tab/>meninggal dunia; --------------------------------</p>
 <p align=justify indent=0.63 hanging=0.31>e. <tab/>diberhentikan berdasarkan keputusan Rapat Umum Pemegang Saham. ---------------------------------</p>
-<w:b>------------- TUGAS DAN WEWENANG KOMISARIS ------------</w:b>
-<w:b>------------------------ Pasal 15 ---------------------</w:b>
+<w:l|b>------------- TUGAS DAN WEWENANG KOMISARIS ------------</w:l|b>
+<w:l|b>------------------------ Pasal 15 ---------------------</w:l|b>
 <p indent=0.32 hanging=0.32>1. <tab/>Dewan Komisaris setiap waktu dalam jam kerja ---- kantor Perseroan berhak memasuki bangunan dan --- halaman atau tempat lain yang dipergunakan atau - yang dikuasai oleh Perseroan dan berhak --------- memeriksa semua pembukuan, surat dan alat bukti - lainnya, memeriksa dan mencocokkan keadaan uang - kas dan lain-lain serta berhak untuk mengetahui - segala tindakan yang telah dijalankan oleh ------ Direksi. -------------------------------------------</p>
 <p indent=0.32 hanging=0.32>2<tab/>Direksi dan setiap anggota Direksi wajib untuk -- memberikan penjelasan tentang segala hal yang --- ditanyakan oleh Dewan Komisaris. -------------------</p>
 <p indent=0.32 hanging=0.32>3. Apabila seluruh anggota Direksi diberhentikan --- sementara dan Perseroan tidak mempunyai --------- seorangpun anggota Direksi, maka untuk sementara Dewan Komisaris diwajibkan untuk mengurus ------- Perseroan. -----------------------------------------</p>
 <p indent=0.32 hanging=0.32><tab/>-Dalam hal demikian Dewan Komisaris berhak untuk memberikan kekuasaan sementara kepada seorang --- atau lebih diantara anggota Dewan Komisaris atas tanggungan Dewan Komisaris. ---------------------</p>
 <p indent=0.32 hanging=0.32>4. <tab/>Dalam hal hanya ada seorang anggota Dewan ------- Komisaris, segala tugas dan wewenang yang ------- diberikan kepada Komisaris Utama atau anggota --- Dewan Komisaris dalam Anggaran Dasar ini berlaku pula baginya. --------------------------------------</p>
-<w:b>-------------------- RAPAT DEWAN KOMISARIS ------------</w:b>
-<w:b>------------------------ Pasal 16 ---------------------</w:b>
-<p>-Ketentuan sebagaimana dimaksud dalam Pasal 13 ------- mutatis mutandis berlaku bagi rapat Dewan Komisaris.---</p>
+<w:l|b>-------------------- RAPAT DEWAN KOMISARIS ------------</w:l|b>
+<w:l|b>------------------------ Pasal 16 ---------------------</w:l|b>
+<p>-Ketentuan sebagaimana dimaksud dalam Pasal 13 --------- mutatis mutandis berlaku bagi rapat Dewan Komisaris.---</p>
 
-[section 4]
-name=articles_17_to_19
+[section 5]
+name=articles_financials
 var=rencana_kerja_laporan_tahunan
 
 --- BODY ---
-<w:b>---- RENCANA KERJA, TAHUN BUKU DAN LAPORAN TAHUNAN ----- </w:b>
-<w:b>--------------------- Pasal 17 -----------------</w:b>
-<ol type=1>
+<w:l|b>---- RENCANA KERJA, TAHUN BUKU DAN LAPORAN TAHUNAN –--- </w:l|b>
+<w:l|b>----------------- Pasal 17 -----------------</w:l|b>
+<ol>
 <li>Direksi menyampaikan rencana kerja yang memuat –----   juga anggaran tahunan Perseroan kepada Dewan -------   Komisaris untuk mendapat persetujuan, sebelum ------   tahun buku dimulai. --------------------------------</li>
 <li>Rencana kerja sebagaimana dimaksud pada ayat 1 -----   harus disampaikan paling lambat 90 -----------------   (sembilanpuluh) hari sebelum dimulainya tahun ------   buku yang akan datang. -----------------------------</li>
-<li>Tahun buku Perseroan berjalan dari tanggal ----------   {{rencana_kerja_laporan_tahunan.tanggal_awal}} ({{rencana_kerja_laporan_tahunan.tanggal_awal_terbilang}}) {{rencana_kerja_laporan_tahunan.bulan_awal}} sampai dengan tanggal {{rencana_kerja_laporan_tahunan.tanggal_akhir}} -------   ({{rencana_kerja_laporan_tahunan.tanggal_akhir_terbilang}}) {{rencana_kerja_laporan_tahunan.bulan_akhir}}. -------------------------   Pada akhir bulan Desember tiap tahun, buku ---------   Perseroan ditutup. ---------------------------------</li>
-<li>Direksi menyusun laporan tahunan dan ------------   menyediakannya di kantor Perseroan untuk dapat –----   diperiksa oleh para pemegang saham terhitung ------   sejak tanggal panggilan RUPS tahunan. -------------</li>
+<li>Tahun buku Perseroan berjalan dari tanggal ----------   {{rencana_kerja_laporan_tahunan.tanggal_awal}} {{rencana_kerja_laporan_tahunan.bulan_awal}} sampai dengan tanggal {{rencana_kerja_laporan_tahunan.tanggal_akhir}} ---------   {{rencana_kerja_laporan_tahunan.bulan_akhir}}. -------------------------   Pada akhir bulan Desember tiap tahun, buku ---------   Perseroan ditutup. ---------------------------------</li>
+<li>Direksi menyusun laporan tahunan dan --------------   menyediakannya di kantor Perseroan untuk dapat –----   diperiksa oleh para pemegang saham terhitung ------   sejak tanggal panggilan RUPS tahunan. -------------</li>
 </ol>
-<w:b>------- PENGGUNAAN LABA DAN PEMBAGIAN DIVIDEN --------</w:b>
-<w:b>---------------------- Pasal 18 ----------------</w:b>
-<ol type=1>
+<w:l|b>----- PENGGUNAAN LABA DAN PEMBAGIAN DIVIDEN -------</w:l|b>
+<w:l|b>---------------------- Pasal 18 -----------------</w:l|b>
+<ol>
 <li>Laba bersih Perseroan dalam suatu tahun buku -------   seperti tercantum dalam neraca dan perhitungan -----   laba rugi yang telah disahkan oleh RUPS tahunan ---–   dan merupakan saldo laba yang positif, dibagi ------   menurut cara penggunaannya yang ditentukan oleh –---   RUPS tersebut. -------------------------------------</li>
-<li>Jika perhitungan laba rugi pada suatu tahun buku ---   menunjukkan kerugian yang tidak dapat ditutup -------   dengan dana cadangan, maka kerugian itu akan --------   tetap dicatat dan dimasukkan dalam perhitungan –----   laba rugi dan dalam tahun buku selanjutnya --------   Perseroan dianggap tidak mendapat laba selama ------   kerugian yang tercatat dan dimasukkan dalam -------   perhitungan laba rugi itu belum sama sekali ---------   tertutup. ------------------------------------------</li>
+<li>Jika perhitungan laba rugi pada suatu tahun buku ---   menunjukkan kerugian yang tidak dapat ditutup ------   dengan dana cadangan, maka kerugian itu akan --------   tetap dicatat dan dimasukkan dalam perhitungan –----   laba rugi dan dalam tahun buku selanjutnya --------   Perseroan dianggap tidak mendapat laba selama ------   kerugian yang tercatat dan dimasukkan dalam -------   perhitungan laba rugi itu belum sama sekali -------   tertutup. ------------------------------------------</li>
 </ol>
-<w:b>------------------ PENGGUNAAN CADANGAN ------------ </w:b>
-<w:b>---------------------- Pasal 19 ----------------------</w:b>
-<ol type=1>
+<w:l|b>-------------- PENGGUNAAN CADANGAN ----------</w:l|b>
+<w:l|b>------------------- Pasal 19 -----------------</w:l|b>
+<ol>
 <li>Penyisihan laba bersih untuk cadangan dilakukan ---–   sampai mencapai 20 % (duapuluh persen) dari --------   jumlah modal ditempatkan dan disetor hanya boleh----   dipergunakan untuk menutup kerugian yang tidak –----   dipenuhi oleh cadangan lain. -----------------------</li>
-<li>Jika jumlah cadangan telah melebihi jumlah 20 ----   (duapuluh persen), RUPS dapat memutuskan agar ------   jumlah kelebihannya digunakan bagi keperluan -------   Perseroan. -----------------------------------------</li>
-<li>Cadangan sebagaimana dimaksud pada ayat 1 yang –----   belum dipergunakan untuk menutup kerugian dan ------   kelebihan cadangan sebagaimana dimaksud pada --------   ayat 2 yang penggunaannya belum ditentukan oleh –---   RUPS harus dikelola oleh Direksi dengan cara yang --   tepat menurut pertimbangan Direksi, setelah --------   memperoleh persetujuan Dewan Komisaris dan --------   memperhatikan peraturan perundang-undangan agar –---   memperoleh laba. -----------------------------------</li>
+<li>Jika jumlah cadangan telah melebihi jumlah 20 % ----   (duapuluh persen), RUPS dapat memutuskan agar ------   jumlah kelebihannya digunakan bagi keperluan ------   Perseroan. -----------------------------------------</li>
+<li>Cadangan sebagaimana dimaksud pada ayat 1 yang –----   belum dipergunakan untuk menutup kerugian dan ------   kelebihan cadangan sebagaimana dimaksud pada --------   ayat 2 yang penggunaannya belum ditentukan oleh –---   RUPS harus dikelola oleh Direksi dengan cara yang --   tepat menurut pertimbangan Direksi, setelah -------   memperoleh persetujuan Dewan Komisaris dan --------   memperhatikan peraturan perundang-undangan agar –---   memperoleh laba. -----------------------------------</li>
 </ol>
 
-[section 5]
-name=closing_provisions
+[section 6]
+name=closing
 var=modal, []pendiri, []jabatan
 
 --- BODY ---
-<w:b>------------------- KETENTUAN PENUTUP ---------- </w:b>
-<w:b>--------------------- Pasal 20 ----------------</w:b>
+<w:l|b>----------------- KETENTUAN PENUTUP --------</w:l|b>
+<w:l|b>---------------------- Pasal 20 -----------------</w:l|b>
 <p>-Segala sesuatu yang tidak atau belum cukup diatur ------ dalam Anggaran Dasar ini, akan diputuskan dalam --------RUPS. -------------------------------------------------</p>
-<p>-Akhirnya, penghadap yang bertindak sebagaimana --------- tersebut di atas menerangkan bahwa : ------------------</p>
+<p>-Akhirnya, penghadap yang bertindak sebagaimana -------- tersebut di atas menerangkan bahwa : ------------------</p>
 <p>1. - Untuk pertama kalinya telah diambil bagian dan ---– </p>
-<p indent=0.40>disetor penuh dengan uang tunai melalui kas --------</p>
-<p indent=0.40>Perseroan sejumlah {{modal.modal_disetor_saham}} ({{modal.modal_disetor_saham_terbilang}}) saham atau </p>
-<p indent=0.40>seluruhnya dengan nilai ----- </p>
-<p indent=0.40>nominal sebesar Rp.{{modal.modal_disetor_nominal_seluruhnya}},- ({{modal.modal_disetor_nominal_seluruhnya_terbilang}} rupiah),yaitu</p>
-<p indent=0.40>oleh para pendiri : -------</p>
+<p indent=0.4>disetor penuh dengan uang tunai melalui kas --------</p>
+<p indent=0.4>Perseroan sejumlah {{modal.modal_disetor_saham}} ({{modal.modal_disetor_saham_terbilang}}) saham atau </p>
+<p indent=0.4>seluruhnya dengan nilai ----- </p>
+<p indent=0.4>nominal sebesar Rp.{{modal.modal_disetor_nominal_seluruhnya}},- ({{modal.modal_disetor_nominal_seluruhnya_terbilang}} rupiah),yaitu</p>
+<p indent=0.4>oleh para pendiri : -------</p>
 <loop:ol p from pendiri type=a>
 <li><b>{{p.panggilan}} {{p.nama}}</b>, tersebut ----------- -sebanyak {{p.lembar_saham}} ({{p.lembar_saham_terbilang}})-------- saham,dengan nilai nominal----------------------- seluruhnya sebesar ------------- Rp. {{p.jumlah_dalam_rupiah}},- ({{p.jumlah_dalam_rupiah_terbilang}} rupiah)-----</li>
 </loop:ol>
 <p>-sehingga seluruhnya berjumlah {{modal.modal_disetor_saham}} ({{modal.modal_disetor_saham_terbilang}}) saham, dengan nilai ----------------------- nominal seluruhnya sebesar Rp.{{modal.modal_disetor_nominal_seluruhnya}},- ({{modal.modal_disetor_nominal_seluruhnya_terbilang}} rupiah).-</p>
-<ol type=1 start=2>
+<ol>
 <li>-Menyimpang dari ketentuan dalam Pasal 11 dan -------   Pasal 14 Anggaran Dasar ini mengenai tata cara ------   pengangkatan anggota Direksi dan Komisaris, telah --   diangkat sebagai : ---------------------------------
 <loop j from jabatan>
-<p><b>- {{j.nama_jabatan}} : -{{j.panggilan}} {{j.nama}}, ---------              tersebut.----------------------------</b></p>
+<p><b>- {{j.nama_jabatan}} : -{{j.panggilan}} {{j.nama}}, -</b><b>--------</b><b>tersebut</b><b>.----------------------------</b></p>
 </loop>
 -Pengangkatan anggota Direksi dan Dewan Komisaris ---   tersebut telah diterima oleh masing-masing yang –---   bersangkutan. --------------------------------------</li>
-<li>-Direksi Perseroan baik bersama-sama maupun ---------   sendiri-sendiri dengan hak untuk memindahkan -------   kekuasaan ini kepada orang lain dikuasakan untuk –--   memohon pengesahan atas anggaran dasar ini dari –---   instansi yang berwenang dan untuk membuat ---------   pengubahan dan/atau tambahan dalam bentuk yang -----   bagaimanapun juga yang diperlukan untuk memperoleh -   pengesahan tersebut dan untuk mengajukan serta ------   menandatangani semua permohonan dan dokumen -------   lainnya, untuk memilih tempat kedudukan dan untuk --   melaksanakan tindakan lain yang mungkin -----------   diperlukan. ----------------------------------------</li>
+<li>-Direksi Perseroan baik bersama-sama maupun --------   sendiri-sendiri dengan hak untuk memindahkan --------   kekuasaan ini kepada orang lain dikuasakan untuk –--   memohon pengesahan atas anggaran dasar ini dari –---   instansi yang berwenang dan untuk membuat ---------   pengubahan dan/atau tambahan dalam bentuk -------   bagaimanapun juga yang diperlukan untuk memperoleh -   pengesahan tersebut dan untuk mengajukan serta ------   menandatangani semua permohonan dan dokumen -------   lainnya, untuk memilih tempat kedudukan dan untuk --   melaksanakan tindakan lain yang mungkin ---------   diperlukan. ----------------------------------------</li>
 </ol>
 
-[section 6]
-name=closing_and_witnesses
+[section 7]
+name=execution
 var=[]saksi_saksi
 keys=saksi_saksi.tanggal_lahir
 formats=[saksi_saksi.tanggal_lahir:dd-MM-yyyy]
 
 --- BODY ---
-<w:b>------------------ DEMIKIAN AKTA INI -----------------</w:b>
-<p>-Dibuat sebagai minuta dan dilangsungkan di ----------</p>
+<w:l|b>------------------ DEMIKIAN AKTA INI -----------------</w:l|b>
+<p>-Dibuat sebagai minuta dan dilangsungkan di -----------</p>
 <p>Kabupaten Karawang, pada hari dan tanggal seperti –----</p>
 <p>tersebut pada bagian awal akta ini, dengan dihadiri ---</p>
 <p>oleh para saksi : -------------------------------------</p>
 <loop:ol s from saksi_saksi type=1>
-<li>-{{s.panggilan}} {{s.nama}}, lahir di {{s.tempat_lahir}}, pada tanggal {{s.tanggal_lahir}} ({{s.tanggal_lahir_terbilang}}), Warga Negara, <tab/><tab/>{{s.pekerjaan}}, bertempat tinggal di {{s.tempat_tinggal}}, {{s.alamat}}, Rukun Tetangga {{s.rukun_tetangga}}, Rukun Warga {{s.rukun_warga}}, <tab/><tab/>Kelurahan {{s.kelurahan}}, ------   Kecamatan {{s.kecamatan}}., pemegang Kartu Tanda Penduduk -   Nomor Induk Kependudukan {{s.nomor_induk_kependudukan}}; ---------</li>
+<li>-{{s.panggilan}} {{s.nama}}, lahir di {{s.tempat_lahir}}, pada tanggal {{s.tanggal_lahir}} ({{s.tanggal_lahir_terbilang}}), Warga Negara, <tab/><tab/>{{s.pekerjaan}}, bertempat tinggal di {{s.tempat_tinggal}}, <tab/><tab/>{{s.alamat}}, Rukun Tetangga {{s.rukun_tetangga}}, Rukun Warga {{s.rukun_warga}}, <tab/><tab/>Kelurahan {{s.kelurahan}}, ------   Kecamatan {{s.kecamatan}}., pemegang Kartu Tanda Penduduk -   Nomor Induk Kependudukan {{s.nomor_induk_kependudukan}}.; ---------</li>
 </loop:ol>
-<p>-keduanya untuk sementara berada di ....... -----------</p>
-<p>-Segera setelah saya, Notaris, membacakan akta ini------ kepada penghadap dan para saksi, maka segera --------- penghadap, para saksi dan saya, Notaris, ------------- menandatangani akta ini.-----------------------------</p>
+<p>-keduanya untuk sementara berada di ......</p>
+<p>-Segera setelah saya, Notaris, membacakan akta ini------ kepada penghadap dan para saksi, maka segera --------- penghadap, para saksi dan saya, Notaris, ------------- menandatangani akta ini.-</p>
 <p>-Dibuat dengan tanpa perubahan. -----------------------</p>
-<p> AKTA ASLINYA TELAH DITANDA-TANGANI DENGAN SEMPURNA ---</p>
-<p> DIBERIKAN SEBAGAI SALINAN.</p>
+<p>AKTA ASLINYA TELAH DITANDA-TANGANI DENGAN SEMPURNA ---</p>
+<p>DIBERIKAN SEBAGAI SALINAN.</p>

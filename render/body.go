@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/rachmanzz/dcd/internal/property"
@@ -42,14 +43,16 @@ func (c *Compiler) renderBody(body string) error {
 		case strings.HasPrefix(line, "<ul") || strings.HasPrefix(line, "<ol"):
 			ordered := strings.HasPrefix(line, "<ol")
 			var numFmt string
+			startVal := 1
 			if ordered && !strings.HasPrefix(line, "<ol>") {
 				numFmt = parseListType(line)
+				startVal = parseListStart(line)
 			}
 			items, next, err := c.collectListItems(lines, i)
 			if err != nil {
 				return err
 			}
-			if err := c.r.AddList(items, ordered, numFmt); err != nil {
+			if err := c.r.AddList(items, ordered, numFmt, startVal); err != nil {
 				return err
 			}
 			i = next
@@ -341,6 +344,23 @@ func parseListType(line string) string {
 		return ""
 	}
 	return rest[:end]
+}
+
+func parseListStart(line string) int {
+	idx := strings.Index(line, "start=")
+	if idx < 0 {
+		return 1
+	}
+	rest := line[idx+6:]
+	end := strings.IndexAny(rest, " >")
+	if end < 0 {
+		return 1
+	}
+	n, err := strconv.Atoi(rest[:end])
+	if err != nil || n < 1 {
+		return 1
+	}
+	return n
 }
 
 func parseAttrs(s string) map[string]string {

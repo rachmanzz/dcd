@@ -1,8 +1,8 @@
 {
-    "info_dasar": {
+        "info_dasar": {
             "nama_perseroan": "JALAN MAJU MUNDUR",
             "nomor_akta": "03",
-            "pada_hari": "Senin",
+            "pada_hari": "Rabu",
             "tanggal_akta": "22-07-2026",
             "tanggal_akta_terbilang": "dua puluh dua Juli dua ribu dua puluh enam",
             "jam_awal_akta": "08:30",
@@ -11,8 +11,8 @@
             "gelar_notaris_text": "Sarjana Hukum, Magistra Hukum",
             "lokasi_kedudukan_notaris": "Jakarta Selatan",
             "lokasi_kedudukan_perseroan": "Jakarta Selatan",
-            "bidang_usaha": "PERIKANAN"
-    },
+            "kegiatan_usaha": "Perikanan"
+        },
         "jabatan": [
             {
                 "nama_jabatan": "Direktur Utama",
@@ -32,19 +32,16 @@
         ],
         "kbli_items": [
             {
-                "letter": "a",
                 "nama_kbli": "JASA PENUNJANG KEGIATAN PENANGKAPAN DAN PEMBUDIDAYAAN IKAN",
                 "kode_kbli": "03300",
                 "deskripsi_kbli": "Kelompok ini mencakup - jasa penunjang insidental pada kegiatan penangkapan dan pembudidayaan ikan, baik di laut maupun di perairan air tawar, seperti jasa pemberian pakan, jasa pemanenan, jasa persiapan lelang, jasa sortasi dan gradasi, serta jasa uji mutu; - kegiatan penanganan dan pengawetan ikan hasil penangkapan atau pembudidayaan sebelum dijual, seperti jasa pendinginan ikan untuk mempertahankan kesegarannya; - perlindungan ikan dari predator; - pengendalian dan pengawasan ikan (fisheries control/fish guard); - kegiatan restorasi ekosistem maritim. Kelompok ini tidak mencakup - kegiatan pengolahan ikan dan produk pembudidayaan ikan di kapal pabrik atau pabrik di daratan, ; - pengolahan ikan, krustasea, dan moluska, ; - distribusi hasil perikanan dan produk budi daya, lihat golongan pokok 46, 47, atau 52; - kegiatan perikanan yang dilakukan untuk olahraga atau rekreasi serta jasa terkait, ; - pengoperasian fasilitas pemancingan untuk olahraga, ."
             },
             {
-                "letter": "b",
                 "nama_kbli": "INDUSTRI KIMIA DASAR ORGANIK DARI SUMBER DAYA ALAM HAYATI",
                 "kode_kbli": "20115",
                 "deskripsi_kbli": "Kelompok ini mencakup pembuatan produk kimia dasar organik yang menghasilkan bahan kimia dari hasil pertanian dan perikanan, seperti: - pembuatan biobenzena, biotoluena, dan bioxilena melalui pirolisis biomassa alkohol asiklik dan siklik; - pembuatan asam karboksilat dari hewan atau tumbuhan, seperti asam lemak/fatty acid, asam asetat, asam sitrat, melalui fermentasi atau proses lainnya; - fermentasi tebu, jagung, atau sejenisnya untuk menghasilkan alkohol dan ester, seperti bioetanol; - pembuatan alkohol lemak/fatty alcohol, furfural, sorbitol; - pembuatan arang kayu, arang batok kelapa, briket arang batok kelapa, arang dari biomassa lainnya; - pembuatan produk distilasi kayu, getah alami, seperti gondorukem dan terpentin; - pembuatan senyawa kimia yang dipisahkan dari minyak asiri, seperti caryophyllene, eugenol, vanilin, geraniol, citronellaldehyde. Kelompok ini tidak mencakup - pembuatan biofuel cair, ; - pembuatan polimer plastik, ."
             },
             {
-                "letter": "c",
                 "nama_kbli": "INDUSTRI KENDARAAN AIR DAN BAWAH AIR BERAWAK",
                 "kode_kbli": "30111",
                 "deskripsi_kbli": "Kelompok ini mencakup pembuatan atau perakitan berbagai kendaraan air dan bawah air berawak, baik militer maupun sipil, yang didesain untuk beroperasi hanya dengan kehadiran secara fisik awak kapal dalam menjalankan fungsi utama kapal (navigasi, propulsi, dan keselamatan), seperti kapal penumpang, kapal feri, kapal kargo, kapal tanker, kapal penyeret, kapal layar untuk komersil, kapal perang, kapal untuk penelitian, kapal penangkap ikan,kapal untuk pengolahan ikan dan pengawetan hasil perikanan yang hanya dapat dioperasikan dengan kehadiran secara fisik awak kapal."
@@ -77,14 +74,14 @@
                 "rukun_tetangga": "01",
                 "rukun_warga": "03",
                 "kelurahan": "Menteng",
-                "kecamatan": "Menteng",
                 "kabupaten_kota": "Jakarta Selatan",
                 "provinsi_ktp": "DKI Jakarta",
                 "nomor_induk_kependudukan": "929381310841084104",
                 "lembar_saham": "500000000",
                 "lembar_saham_terbilang": "lima ratus juta",
                 "jumlah_dalam_rupiah": "5.000.000.000",
-                "jumlah_dalam_rupiah_terbilang": "lima miliar"
+                "jumlah_dalam_rupiah_terbilang": "lima miliar",
+                "kecamatan": "Menteng"
             },
             {
                 "panggilan": "Tuan",
@@ -98,14 +95,14 @@
                 "rukun_tetangga": "01",
                 "rukun_warga": "03",
                 "kelurahan": "Menteng",
-                "kecamatan": "Menteng",
                 "kabupaten_kota": "Jakarta Selatan",
                 "provinsi_ktp": "DKI Jakarta",
                 "nomor_induk_kependudukan": "9238103810381031",
                 "lembar_saham": "250000000",
                 "lembar_saham_terbilang": "dua ratus lima puluh juta",
                 "jumlah_dalam_rupiah": "2.500.000.000",
-                "jumlah_dalam_rupiah_terbilang": "dua miliar lima ratus juta"
+                "jumlah_dalam_rupiah_terbilang": "dua miliar lima ratus juta",
+                "kecamatan": "Menteng"
             },
             {
                 "panggilan": "Tuan",
@@ -119,23 +116,21 @@
                 "rukun_tetangga": "003",
                 "rukun_warga": "004",
                 "kelurahan": "Menteng",
-                "kecamatan": "Menteng",
                 "kabupaten_kota": "Jakarta Selatan",
                 "provinsi_ktp": "DKI Jakata",
                 "nomor_induk_kependudukan": "9201293830101",
                 "lembar_saham": "250000000",
                 "lembar_saham_terbilang": "dua ratus lima puluh juta",
                 "jumlah_dalam_rupiah": "2.500.000.000",
-                "jumlah_dalam_rupiah_terbilang": "dua miliar lima ratus juta"
+                "jumlah_dalam_rupiah_terbilang": "dua miliar lima ratus juta",
+                "kecamatan": "Menteng"
             }
         ],
         "rencana_kerja_laporan_tahunan": {
             "tanggal_awal": "01",
-            "tanggal_awal_terbilang": "satu",
-            "bulan_awal": "Januari",
+            "bulan_awal": "01",
             "tanggal_akhir": "31",
-            "tanggal_akhir_terbilang": "tiga puluh satu",
-            "bulan_akhir": "Desember"
+            "bulan_akhir": "12"
         },
         "saksi_saksi": [
             {
@@ -154,7 +149,6 @@
                 "nomor_induk_kependudukan": "283128108301831"
             }
         ],
-        "tempat_kedudukan": "Jakarta Selatan",
         "jumlah_pendiri_setuju": "3",
         "jumlah_pendiri_setuju_terbilang": "tiga"
-}
+   }

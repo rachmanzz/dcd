@@ -21,6 +21,7 @@ type DocxRenderer struct {
 	pageWidthMm   float64
 	unit          string
 	numFmtInited  bool
+	listCount     int
 }
 
 func NewDocxRenderer() *DocxRenderer {

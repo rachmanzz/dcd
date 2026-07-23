@@ -34,6 +34,7 @@ type ListItem struct {
 	Attrs     map[string]string
 	Ordered   bool   // sub-list type — true for <ol>, false for <ul>
 	NumFormat string // "" = decimal, "A" = upperLetter, "a" = lowerLetter, "I" = upperRoman, "i" = lowerRoman
+	Start     int    // 0 or unset means start at 1
 }
 
 type Renderer interface {
@@ -46,7 +47,7 @@ type Renderer interface {
 	AddImage(src string, attrs map[string]string) error
 	AddHyperlink(text, url string, attrs map[string]string) error
 	AddWrappedParagraph(text string, flags string, attrs map[string]string) error
-	AddList(items []ListItem, ordered bool, numFmt string) error
+	AddList(items []ListItem, ordered bool, numFmt string, start int) error
 	AddTable(rows []TableRow, attrs map[string]string) error
 	SetPageStyle(props map[string]string) error
 	SetHeader(props map[string]string) error

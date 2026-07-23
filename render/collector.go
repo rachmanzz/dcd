@@ -56,6 +56,7 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 	var subItems []ListItem
 	var subOrdered bool
 	var subNumFmt string
+	var subStart int
 	i := start
 	for i < len(lines) {
 		line := strings.TrimSpace(lines[i])
@@ -64,8 +65,10 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 		if line == "<ul>" || strings.HasPrefix(line, "<ol") {
 			subOrdered = strings.HasPrefix(line, "<ol")
 			subNumFmt = ""
+			subStart = 1
 			if subOrdered && line != "<ol>" {
 				subNumFmt = parseListType(line)
+				subStart = parseListStart(line)
 			}
 			var err error
 			subItems, i, err = c.collectListItems(lines, i)
@@ -99,6 +102,7 @@ func (c *Compiler) collectLi(lines []string, start int, startLine string) (ListI
 		item.Items = subItems
 		item.Ordered = subOrdered
 		item.NumFormat = subNumFmt
+		item.Start = subStart
 	}
 	return item, i, nil
 }
