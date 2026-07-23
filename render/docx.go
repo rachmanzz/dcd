@@ -22,6 +22,7 @@ type DocxRenderer struct {
 	unit          string
 	numFmtInited  bool
 	listCount     int
+	nsidCounter   int
 }
 
 func NewDocxRenderer() *DocxRenderer {
@@ -185,25 +186,31 @@ func (d *DocxRenderer) injectNumFmts() error {
 	}
 	var sb strings.Builder
 	for _, f := range formats {
-		for d := 0; d < 3; d++ {
-			absID := f.base + d
-			numID := f.base + d
+		for lvl := 0; lvl < 3; lvl++ {
+			absID := f.base + lvl
+			numID := f.base + lvl
+			nsid := d.genNsid()
 			sb.WriteString(fmt.Sprintf(`
   <w:abstractNum w:abstractNumId="%d">
+    <w:nsid w:val="%s"/>
     <w:multiLevelType w:val="singleLevel"/>
     <w:lvl w:ilvl="0">
       <w:start w:val="1"/>
       <w:numFmt w:val="%s"/>
+      <w:pStyle w:val="ListNumber"/>
       <w:lvlText w:val="%%1."/>
       <w:lvlJc w:val="left"/>
       <w:pPr>
+        <w:tabs>
+          <w:tab w:val="num" w:pos="%s"/>
+        </w:tabs>
         <w:ind w:left="%s" w:hanging="360"/>
       </w:pPr>
     </w:lvl>
   </w:abstractNum>
   <w:num w:numId="%d">
     <w:abstractNumId w:val="%d"/>
-  </w:num>`, absID, f.name, indents[d], numID, absID))
+  </w:num>`, absID, nsid, f.name, indents[lvl], indents[lvl], numID, absID))
 		}
 	}
 	content = content[:idx] + sb.String() + "\n" + content[idx:]

@@ -119,6 +119,11 @@ func numFmtWVal(numFmt string) string {
 	}
 }
 
+func (d *DocxRenderer) genNsid() string {
+	d.nsidCounter++
+	return fmt.Sprintf("%08X", d.nsidCounter)
+}
+
 func (d *DocxRenderer) injectOLNumEntry(numID string, numFmt string, start int) {
 	raw, ok := d.root.FileMap.Load("word/numbering.xml")
 	if !ok {
@@ -128,17 +133,32 @@ func (d *DocxRenderer) injectOLNumEntry(numID string, numFmt string, start int) 
 	numIDInt, _ := strconv.Atoi(numID)
 	abstractNumID := numIDInt
 	numFmtVal := numFmtWVal(numFmt)
+	nsid := d.genNsid()
+	pStyle := "ListNumber"
+	switch numFmt {
+	case "a", "A":
+		pStyle = "ListNumber"
+	case "i", "I":
+		pStyle = "ListNumber"
+	default:
+		pStyle = "ListNumber"
+	}
 	var numEntry string
 	if start > 1 {
 		numEntry = fmt.Sprintf(`
   <w:abstractNum w:abstractNumId="%d">
+    <w:nsid w:val="%s"/>
     <w:multiLevelType w:val="singleLevel"/>
     <w:lvl w:ilvl="0">
       <w:start w:val="1"/>
       <w:numFmt w:val="%s"/>
+      <w:pStyle w:val="%s"/>
       <w:lvlText w:val="%%1."/>
       <w:lvlJc w:val="left"/>
       <w:pPr>
+        <w:tabs>
+          <w:tab w:val="num" w:pos="360"/>
+        </w:tabs>
         <w:ind w:left="360" w:hanging="360"/>
       </w:pPr>
     </w:lvl>
@@ -148,24 +168,29 @@ func (d *DocxRenderer) injectOLNumEntry(numID string, numFmt string, start int) 
     <w:lvlOverride w:ilvl="0">
       <w:startOverride w:val="%d"/>
     </w:lvlOverride>
-  </w:num>`, abstractNumID, numFmtVal, numID, abstractNumID, start)
+  </w:num>`, abstractNumID, nsid, numFmtVal, pStyle, numID, abstractNumID, start)
 	} else {
 		numEntry = fmt.Sprintf(`
   <w:abstractNum w:abstractNumId="%d">
+    <w:nsid w:val="%s"/>
     <w:multiLevelType w:val="singleLevel"/>
     <w:lvl w:ilvl="0">
       <w:start w:val="1"/>
       <w:numFmt w:val="%s"/>
+      <w:pStyle w:val="%s"/>
       <w:lvlText w:val="%%1."/>
       <w:lvlJc w:val="left"/>
       <w:pPr>
+        <w:tabs>
+          <w:tab w:val="num" w:pos="360"/>
+        </w:tabs>
         <w:ind w:left="360" w:hanging="360"/>
       </w:pPr>
     </w:lvl>
   </w:abstractNum>
   <w:num w:numId="%s">
     <w:abstractNumId w:val="%d"/>
-  </w:num>`, abstractNumID, numFmtVal, numID, abstractNumID)
+  </w:num>`, abstractNumID, nsid, numFmtVal, pStyle, numID, abstractNumID)
 	}
 	endTag := "</w:numbering>"
 	idx := strings.LastIndex(content, endTag)
