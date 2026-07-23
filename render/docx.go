@@ -158,36 +158,6 @@ func (d *DocxRenderer) Save(path string) error {
 
 func intPtr(n int) *int { return &n }
 
-func numFmtBaseID(fmt string) int {
-	switch fmt {
-	case "A":
-		return 10
-	case "a":
-		return 13
-	case "I":
-		return 16
-	case "i":
-		return 19
-	default:
-		return 0
-	}
-}
-
-func numFmtName(fmt string) string {
-	switch fmt {
-	case "A":
-		return "upperLetter"
-	case "a":
-		return "lowerLetter"
-	case "I":
-		return "upperRoman"
-	case "i":
-		return "lowerRoman"
-	default:
-		return "decimal"
-	}
-}
-
 func (d *DocxRenderer) injectNumFmts() error {
 	if d.numFmtInited {
 		return nil

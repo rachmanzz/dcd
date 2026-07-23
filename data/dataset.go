@@ -28,10 +28,6 @@ func NewDataSet(src any) *DataSet {
 	return ds
 }
 
-func (ds *DataSet) Set(key string, val any) {
-	ds.data[key] = val
-}
-
 func (ds *DataSet) Get(path string) (any, bool) {
 	parts := strings.Split(path, ".")
 	current, ok := ds.data[parts[0]]
